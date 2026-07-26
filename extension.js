@@ -20,10 +20,11 @@ class LauncherDialog extends ModalDialog.ModalDialog {
 
         this._buildUI();
         this._loadApps();
+        this._setupEvents();
     }
 
     _buildUI() {
-        let card = new St.BoxLayout({
+        this._card = new St.BoxLayout({
             style_class: 'launcher-card',
             vertical: false,
         });
@@ -76,10 +77,47 @@ class LauncherDialog extends ModalDialog.ModalDialog {
         this._scrollView.set_child(this._appListContainer);
         rightCol.add_child(this._scrollView);
 
-        card.add_child(leftCol);
-        card.add_child(rightCol);
+        this._card.add_child(leftCol);
+        this._card.add_child(rightCol);
 
-        this.contentLayout.add_child(card);
+        this.contentLayout.add_child(this._card);
+    }
+
+    _setupEvents() {
+        // ESC key on search input
+        this._searchEntry.clutter_text.connect('key-press-event', (actor, event) => {
+            if (event.get_key_symbol() === Clutter.KEY_Escape) {
+                this.close();
+                return Clutter.EVENT_STOP;
+            }
+            return Clutter.EVENT_PROPAGATE;
+        });
+
+        // ESC key on modal window
+        this.connect('key-press-event', (actor, event) => {
+            if (event.get_key_symbol() === Clutter.KEY_Escape) {
+                this.close();
+                return Clutter.EVENT_STOP;
+            }
+            return Clutter.EVENT_PROPAGATE;
+        });
+
+        // Click outside popup card to close
+        this.connect('button-press-event', (actor, event) => {
+            if (this.state !== ModalDialog.State.OPENED)
+                return Clutter.EVENT_PROPAGATE;
+
+            let [x, y] = event.get_coords();
+            let [cardX, cardY] = this._card.get_transformed_position();
+            let [cardW, cardH] = this._card.get_transformed_size();
+
+            // If click coordinates are outside the main launcher card area
+            if (x < cardX || x > cardX + cardW || y < cardY || y > cardY + cardH) {
+                this.close();
+                return Clutter.EVENT_STOP;
+            }
+            return Clutter.EVENT_PROPAGATE;
+        });
     }
 
     _loadApps() {
