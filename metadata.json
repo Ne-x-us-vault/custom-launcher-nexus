@@ -1,0 +1,8 @@
+{
+  "uuid": "custom-launcher@nexus.dev",
+  "name": "Custom Red Launcher",
+  "description": "A modern two-column application launcher with quick search and dock integration.",
+  "shell-version": ["45", "46", "47"],
+  "settings-schema": "org.gnome.shell.extensions.custom-launcher",
+  "url": "https://github.com/yourusername/custom-launcher"
+}
