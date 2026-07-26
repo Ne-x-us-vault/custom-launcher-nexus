@@ -1,0 +1,71 @@
+/* Container override for ModalDialog */
+.launcher-modal .modal-dialog {
+    background-color: transparent;
+    border: none;
+    border-radius: 28px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    padding: 0px;
+}
+
+/* Main Outer Card */
+.launcher-card {
+    background: linear-gradient(135deg, #d3361b, #8f170c);
+    border-radius: 28px;
+    padding: 20px;
+    width: 760px;
+    height: 480px;
+}
+
+/* Left Column */
+.launcher-left-col {
+    margin-right: 16px;
+}
+
+.launcher-search-entry {
+    background-color: #191112;
+    color: #ffffff;
+    border-radius: 20px;
+    padding: 10px 16px;
+    font-size: 11pt;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.launcher-dock {
+    padding: 10px;
+}
+
+.dock-btn {
+    background-color: #191112;
+    border-radius: 14px;
+    padding: 10px 16px;
+    color: #ffffff;
+}
+
+.dock-btn:hover {
+    background-color: #2b1d1e;
+}
+
+/* Right Column */
+.launcher-right-panel {
+    background-color: #211516;
+    border-radius: 22px;
+    padding: 10px;
+}
+
+.app-row {
+    padding: 10px 14px;
+    border-radius: 14px;
+    transition-duration: 150ms;
+}
+
+.app-row:hover,
+.app-row:focus {
+    background-color: #352022;
+}
+
+.app-label {
+    color: #ffffff;
+    font-size: 10.5pt;
+    font-weight: bold;
+    margin-left: 12px;
+}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.custom-launcher" path="/org/gnome/shell/extensions/custom-launcher/">
+    <key name="shortcut-toggle" type="as">
+      <default><![CDATA[['<Super>Return']]]></default>
+      <summary>Keybinding to toggle the custom launcher</summary>
+    </key>
+  </schema>
+</schemalist>
