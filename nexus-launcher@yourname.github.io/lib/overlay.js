@@ -1,10 +1,12 @@
 import St from 'gi://St';
 import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import AppUtils from './appUtils.js';
 import SearchBar from './searchBar.js';
 import DockBar from './dockBar.js';
 import AppList from './appList.js';
+import UniversalSearch from './universalSearch.js';
 
 export default class NexusOverlay {
   constructor(settings) {
@@ -20,9 +22,12 @@ export default class NexusOverlay {
     this._keyPressId = null;
     this._entryKeyPressId = null;
     this._scrollEventId = null;
+    this._universalSearchTimeoutId = 0;
+    this._searchGeneration = 0;
     this._searchBar = null;
     this._appList = null;
     this._dockBar = null;
+    this._universalSearch = new UniversalSearch();
   }
 
   open() {
@@ -88,6 +93,10 @@ export default class NexusOverlay {
 
     console.log('[NexusOverlay] close() called');
     this.visible = false;
+    if (this._universalSearchTimeoutId) {
+      GLib.source_remove(this._universalSearchTimeoutId);
+      this._universalSearchTimeoutId = 0;
+    }
 
     if (this._keyPressId !== null && this._actor) {
       this._actor.disconnect(this._keyPressId);
@@ -161,6 +170,20 @@ export default class NexusOverlay {
 
     this._searchBar = new SearchBar(this._settings, (query) => this._onSearchChanged(query));
     this._identityPanel.add_child(this._searchBar.actor);
+    this._identityPanel.add_child(new St.Label({ text: 'N', style_class: 'nexus-mark' }));
+    this._identityPanel.add_child(new St.Label({ text: 'NEXUS', style_class: 'nexus-brand' }));
+    this._identityPanel.add_child(new St.Label({
+      text: 'DEVELOPED BY NE-X-US-VAULT',
+      style_class: 'nexus-brand-subtitle',
+    }));
+    this._identityPanel.add_child(new St.Widget({
+      style_class: 'nexus-divider',
+      x_expand: true,
+    }));
+    this._identityPanel.add_child(new St.Label({
+      text: 'Instant search\nKeyboard-first\nPinned workspace',
+      style_class: 'nexus-status-copy',
+    }));
     this._identityPanel.add_child(new St.Widget({ x_expand: true, y_expand: true }));
 
     // Application card
@@ -174,7 +197,11 @@ export default class NexusOverlay {
     });
 
     this._appList = new AppList(this._settings, (appInfo) => this._launchAndClose(appInfo));
-    this._dockBar = new DockBar(this._settings, (appInfo) => this._launchAndClose(appInfo));
+    this._dockBar = new DockBar(
+      this._settings,
+      appInfo => this._launchAndClose(appInfo),
+      () => this._openPowerDialog()
+    );
 
     this._card.add_child(this._appList.actor);
     this._identityPanel.add_child(this._dockBar.actor);
@@ -213,12 +240,41 @@ export default class NexusOverlay {
   _onSearchChanged(query) {
     if (this._appList) {
       this._appList.filter(query);
+      if (this._universalSearchTimeoutId) {
+        GLib.source_remove(this._universalSearchTimeoutId);
+        this._universalSearchTimeoutId = 0;
+      }
+      const generation = ++this._searchGeneration;
+      if (query.trim().length >= 2) {
+        this._universalSearchTimeoutId = GLib.timeout_add(
+          GLib.PRIORITY_DEFAULT,
+          220,
+          () => {
+            this._universalSearchTimeoutId = 0;
+            this._universalSearch.search(query).then(results => {
+              if (this.visible && generation === this._searchGeneration)
+                this._appList?.setUniversalResults(query, results);
+            }).catch(error => console.log(`[NexusLauncher] universal search error: ${error}`));
+            return GLib.SOURCE_REMOVE;
+          }
+        );
+      }
     }
   }
 
   _launchAndClose(appInfo) {
-    AppUtils.launchApp(appInfo);
+    if (appInfo)
+      AppUtils.launchApp(appInfo);
     this.close();
+  }
+
+  _openPowerDialog() {
+    this.close();
+    try {
+      Main.shutdownDialog.open(global.get_current_time(), 0);
+    } catch (error) {
+      console.log(`[NexusLauncher] could not open power dialog: ${error}`);
+    }
   }
 
   _onKeyPress(event) {

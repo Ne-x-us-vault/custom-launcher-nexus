@@ -40,6 +40,42 @@
   padding: 0;
 }
 
+.nexus-mark {
+  color: rgba(244, 249, 251, 0.90);
+  font-size: 78px;
+  font-weight: 200;
+  margin-top: 22px;
+  margin-bottom: 4px;
+}
+
+.nexus-brand {
+  color: rgba(249, 252, 253, 0.98);
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 3px;
+}
+
+.nexus-brand-subtitle {
+  color: rgba(224, 235, 240, 0.68);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  margin-top: 5px;
+}
+
+.nexus-divider {
+  height: 1px;
+  background-color: rgba(231, 241, 245, 0.25);
+  margin-top: 20px;
+  margin-bottom: 14px;
+}
+
+.nexus-status-copy {
+  color: rgba(228, 239, 243, 0.74);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
 .nexus-app-list-scrollview {
   padding: 4px 0 4px 0;
 }
@@ -115,4 +151,8 @@
 
 .nexus-dock-btn StIcon {
   color: rgba(246, 250, 252, 0.96);
+}
+
+.nexus-quick-action {
+  border: 1px solid rgba(231, 241, 245, 0.16);
 }

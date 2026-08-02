@@ -18,6 +18,8 @@ export default class AppList {
     this._onLaunch = onLaunch;
     this._apps = [];
     this._filteredApps = [];
+    this._appResults = [];
+    this._query = '';
     this._selectedIndex = -1;
 
     this.actor = this._build();
@@ -54,14 +56,23 @@ export default class AppList {
   filter(query) {
     const searchFields = this._settings.get_strv('search-fields');
     const caseSensitive = this._settings.get_boolean('case-sensitive');
-    this._filteredApps = this._apps
+    this._query = query;
+    this._appResults = this._apps
       .map(app => ({
-        app,
+        appInfo: app,
+        id: `app:${app.get_id() || app.get_name()}`,
         score: AppUtils.getMatchScore(app, query, searchFields, caseSensitive),
       }))
       .filter(({score}) => score !== null)
-      .sort((a, b) => a.score - b.score || a.app.get_name().localeCompare(b.app.get_name()))
-      .map(({app}) => app);
+      .sort((a, b) => a.score - b.score || a.appInfo.get_name().localeCompare(b.appInfo.get_name()));
+    this._filteredApps = this._appResults;
+    this._renderRows();
+  }
+
+  setUniversalResults(query, results) {
+    if (query !== this._query)
+      return;
+    this._filteredApps = [...this._appResults, ...results];
     this._renderRows();
   }
 
@@ -70,9 +81,12 @@ export default class AppList {
     this._selectedIndex = -1;
     this._getVerticalAdjustment()?.set_value(0);
 
-    this._filteredApps.forEach((appInfo, index) => {
+    this._filteredApps.forEach((result, index) => {
       const row = new St.Button({ style_class: 'nexus-app-row', x_expand: true, y_expand: false, reactive: true, can_focus: true });
-      const gicon = appInfo.get_icon() || new Gio.ThemedIcon({ name: 'application-x-executable' });
+      const appInfo = result.appInfo;
+      const gicon = appInfo?.get_icon() || new Gio.ThemedIcon({
+        name: result.iconName || 'application-x-executable',
+      });
 
       const content = new St.BoxLayout({ style_class: 'nexus-app-row-content', vertical: false, x_expand: true, y_expand: false });
       content.add_child(new St.Icon({ gicon, icon_size: 38, style_class: 'nexus-app-icon' }));
@@ -80,7 +94,7 @@ export default class AppList {
       // St.Label does not expose an "ellipsize" construct property on recent
       // GNOME Shell versions.  The property belongs to its ClutterText child.
       const label = new St.Label({
-        text: appInfo.get_name(),
+        text: appInfo?.get_name() || result.name,
         style_class: 'nexus-app-label',
         x_expand: true,
       });
@@ -107,11 +121,14 @@ export default class AppList {
   }
 
   _onItemActivate(index) {
-    const appInfo = this._filteredApps[index];
-    if (!appInfo) {
+    const result = this._filteredApps[index];
+    if (!result) {
       return;
     }
-    this._onLaunch(appInfo);
+    if (result.appInfo)
+      this._onLaunch(result.appInfo);
+    else
+      Promise.resolve(result.activate()).then(() => this._onLaunch(null));
   }
 
   moveSelection(delta) {
