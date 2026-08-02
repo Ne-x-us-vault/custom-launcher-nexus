@@ -1,7 +1,5 @@
 import St from 'gi://St';
 import Clutter from 'gi://Clutter';
-import Gio from 'gi://Gio';
-import GLib from 'gi://GLib';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import AppUtils from './appUtils.js';
 import SearchBar from './searchBar.js';
@@ -13,6 +11,7 @@ export default class NexusOverlay {
     this._settings = settings;
     this.visible = false;
     this._actor = null;
+    this._backdrop = null;
     this._card = null;
     this._grab = null;
     this._settingsSignals = [];
@@ -42,8 +41,14 @@ export default class NexusOverlay {
 
       this.visible = true;
 
-      if (this._keyPressId === null && global.stage) {
-        this._keyPressId = global.stage.connect('key-press-event', (_, event) => this._onKeyPress(event));
+      // Key events are delivered to the modal actor and bubble from the search
+      // entry to this handler. Connecting to global.stage causes warnings on
+      // GNOME 50 and makes Escape unreliable while the entry has focus.
+      if (this._keyPressId === null) {
+        this._keyPressId = this._actor.connect(
+          'key-press-event',
+          (_, event) => this._onKeyPress(event)
+        );
       }
 
       if (this._searchBar) {
@@ -71,10 +76,11 @@ export default class NexusOverlay {
       return;
     }
 
+    console.log('[NexusOverlay] close() called');
     this.visible = false;
 
-    if (this._keyPressId !== null && global.stage) {
-      global.stage.disconnect(this._keyPressId);
+    if (this._keyPressId !== null && this._actor) {
+      this._actor.disconnect(this._keyPressId);
       this._keyPressId = null;
     }
 
@@ -105,20 +111,27 @@ export default class NexusOverlay {
   _build() {
     this._actor = new St.Widget({
       reactive: true,
-      style_class: 'nexus-overlay',
+      can_focus: true,
       layout_manager: new Clutter.BinLayout(),
     });
     this._actor.set_size(global.stage.width, global.stage.height);
     this._actor.set_position(0, 0);
 
-    // Backdrop click to close
-    this._actor.connect('button-press-event', (actor, event) => {
-      if (event.get_source() === this._actor) {
-        this.close();
-        return Clutter.EVENT_STOP;
-      }
-      return Clutter.EVENT_PROPAGATE;
+    // Keep the dimmed area as its own actor. This avoids relying on the event
+    // source of the BinLayout container, which differs across Shell releases.
+    this._backdrop = new St.Widget({
+      reactive: true,
+      style_class: 'nexus-overlay',
+      x_expand: true,
+      y_expand: true,
+      x_align: Clutter.ActorAlign.FILL,
+      y_align: Clutter.ActorAlign.FILL,
     });
+    this._backdrop.connect('button-press-event', () => {
+      this.close();
+      return Clutter.EVENT_STOP;
+    });
+    this._actor.add_child(this._backdrop);
 
     // Central Card
     this._card = new St.BoxLayout({
@@ -183,11 +196,14 @@ export default class NexusOverlay {
     }
 
     const key = event.get_key_symbol();
+    const state = event.get_state();
+    if ((state & Clutter.ModifierType.SUPER_MASK) &&
+        (key === Clutter.KEY_Return || key === Clutter.KEY_KP_Enter)) {
+      this.close();
+      return Clutter.EVENT_STOP;
+    }
+
     if (key === Clutter.KEY_Escape) {
-      if (this._searchBar && this._searchBar.getText().length > 0) {
-        this._searchBar.clear();
-        return Clutter.EVENT_STOP;
-      }
       this.close();
       return Clutter.EVENT_STOP;
     }
@@ -234,5 +250,6 @@ export default class NexusOverlay {
       this._appList = null;
     }
     this._card = null;
+    this._backdrop = null;
   }
 }
