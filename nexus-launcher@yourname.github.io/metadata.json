@@ -1,0 +1,8 @@
+{
+  "uuid": "custom-launcher@nexus.dev",
+  "name": "Nexus Launcher",
+  "description": "A frost-glass application launcher with instant search and dock integration.",
+  "shell-version": ["45", "46", "47", "48", "49", "50"],
+  "settings-schema": "org.gnome.shell.extensions.nexus-launcher",
+  "url": ""
+}

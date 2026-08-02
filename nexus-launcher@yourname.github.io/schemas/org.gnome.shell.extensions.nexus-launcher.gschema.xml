@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.nexus-launcher" path="/org/gnome/shell/extensions/custom-launcher/">
+    <key name="hotkey" type="as">
+      <default>["&lt;Super&gt;Return"]</default>
+      <summary>Launcher hotkey</summary>
+      <description>Keybinding used to toggle the Nexus Launcher overlay.</description>
+    </key>
+    <key name="dock-apps" type="as">
+      <default>[]</default>
+      <summary>Pinned dock apps</summary>
+      <description>List of application desktop IDs pinned to the Nexus Launcher dock.</description>
+    </key>
+    <key name="search-fields" type="as">
+      <default>["name", "description"]</default>
+      <summary>Search fields</summary>
+      <description>Fields used when filtering the application list.</description>
+    </key>
+    <key name="case-sensitive" type="b">
+      <default>false</default>
+      <summary>Case sensitive search</summary>
+      <description>Whether search filtering should be case sensitive.</description>
+    </key>
+    <key name="search-hint" type="s">
+      <default>"Search"</default>
+      <summary>Search placeholder text</summary>
+      <description>Hint text displayed in the search entry.</description>
+    </key>
+    <key name="card-size" type="s">
+      <default>"medium"</default>
+      <summary>Card size</summary>
+      <description>Controls the layout scale of the launcher cards.</description>
+    </key>
+    <key name="opacity" type="d">
+      <default>0.92</default>
+      <summary>Overlay opacity</summary>
+      <description>Opacity of the launcher cards' background.</description>
+    </key>
+  </schema>
+</schemalist>

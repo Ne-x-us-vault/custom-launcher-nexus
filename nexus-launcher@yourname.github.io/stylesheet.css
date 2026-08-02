@@ -1,0 +1,102 @@
+.nexus-overlay {
+  background-color: rgba(0, 0, 0, 0.24);
+}
+
+.nexus-overlay-backdrop {
+  background-color: rgba(0, 0, 0, 0.28);
+}
+
+.nexus-overlay-inner {
+  padding: 12px;
+}
+
+.nexus-left-card,
+.nexus-right-card {
+  background-color: rgba(18, 18, 18, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.nexus-left-card {
+  min-width: 260px;
+  padding: 16px;
+}
+
+.nexus-right-card {
+  min-width: 340px;
+  padding: 12px;
+  spacing: 12px;
+}
+
+.nexus-search-widget {
+  background-color: rgba(20, 20, 20, 0.85);
+  border-radius: 999px;
+  padding: 10px 14px;
+  spacing: 10px;
+}
+
+.nexus-search-icon {
+  color: #9ca3af;
+}
+
+.nexus-search-entry {
+  color: #e8e8e8;
+  border: none;
+  background-color: transparent;
+  padding: 0;
+}
+
+.nexus-dock-strip {
+  background-color: rgba(20, 20, 20, 0.85);
+  border-radius: 999px;
+  padding: 10px;
+  spacing: 10px;
+}
+
+.nexus-app-row-content {
+  spacing: 12px;
+}
+
+.nexus-dock-btn {
+  background-color: transparent;
+  border-radius: 14px;
+  min-width: 46px;
+  min-height: 46px;
+}
+
+.nexus-dock-btn:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.nexus-dock-btn StIcon {
+  color: #e8e8e8;
+}
+
+.nexus-app-list-scrollview {
+  padding: 8px 4px;
+}
+
+.nexus-app-row {
+  background-color: transparent;
+  border-radius: 14px;
+  padding: 10px 12px;
+  min-height: 52px;
+}
+
+.nexus-app-row:hover,
+.nexus-app-row:selected,
+.nexus-app-row:selected:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.nexus-app-label {
+  color: #e8e8e8;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.nexus-app-icon {
+  min-width: 32px;
+  min-height: 32px;
+}
