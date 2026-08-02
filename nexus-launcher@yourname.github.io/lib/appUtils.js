@@ -32,29 +32,42 @@ export default class AppUtils {
   }
 
   static matchesApp(appInfo, query, searchFields, caseSensitive) {
+    return AppUtils.getMatchScore(appInfo, query, searchFields, caseSensitive) !== null;
+  }
+
+  static getMatchScore(appInfo, query, searchFields, caseSensitive) {
     if (!query) {
-      return true;
+      return 0;
     }
 
     const text = AppUtils.normalize(query, caseSensitive);
     const fields = [];
 
     if (searchFields.includes('name')) {
-      fields.push(appInfo.get_name());
+      fields.push([appInfo.get_name(), 0]);
     }
     if (searchFields.includes('description')) {
-      fields.push(appInfo.get_description() || '');
+      fields.push([appInfo.get_description() || '', 20]);
     }
     if (searchFields.includes('exec')) {
-      fields.push(appInfo.get_executable() || '');
+      fields.push([appInfo.get_executable() || '', 30]);
     }
+    // Desktop-entry keywords are what make short native-launcher searches
+    // feel natural (for example, "code" or "browser").
+    fields.push(...(appInfo.get_keywords?.() || []).map(keyword => [keyword, 15]));
 
-    return fields.some(value => {
+    let bestScore = null;
+    for (const [value, fieldWeight] of fields) {
       if (!value) {
-        return false;
+        continue;
       }
       const fieldText = AppUtils.normalize(value, caseSensitive);
-      return fieldText.includes(text);
-    });
+      const position = fieldText.indexOf(text);
+      if (position >= 0) {
+        const score = fieldWeight + position + (fieldText.length - text.length) / 100;
+        bestScore = bestScore === null ? score : Math.min(bestScore, score);
+      }
+    }
+    return bestScore;
   }
 }

@@ -31,7 +31,9 @@ export default class AppList {
     this._scrollView = new St.ScrollView({ style_class: 'nexus-app-list-scrollview', overlay_scrollbars: false, x_expand: true, y_expand: true });
     this._root.set_clip_to_allocation(true);
     this._scrollView.set_clip_to_allocation(true);
-    this._list = new St.BoxLayout({ style_class: 'nexus-app-list', vertical: true, x_expand: true, y_expand: true });
+    // The list must keep its natural height. If it expands vertically, one
+    // search result stretches into a full-height selection panel.
+    this._list = new St.BoxLayout({ style_class: 'nexus-app-list', vertical: true, x_expand: true, y_expand: false });
     this._scrollView.set_child(this._list);
     this._root.add_child(this._scrollView);
     return this._root;
@@ -52,19 +54,27 @@ export default class AppList {
   filter(query) {
     const searchFields = this._settings.get_strv('search-fields');
     const caseSensitive = this._settings.get_boolean('case-sensitive');
-    this._filteredApps = this._apps.filter(app => AppUtils.matchesApp(app, query, searchFields, caseSensitive));
+    this._filteredApps = this._apps
+      .map(app => ({
+        app,
+        score: AppUtils.getMatchScore(app, query, searchFields, caseSensitive),
+      }))
+      .filter(({score}) => score !== null)
+      .sort((a, b) => a.score - b.score || a.app.get_name().localeCompare(b.app.get_name()))
+      .map(({app}) => app);
     this._renderRows();
   }
 
   _renderRows() {
     this._list.destroy_all_children();
     this._selectedIndex = -1;
+    this._getVerticalAdjustment()?.set_value(0);
 
     this._filteredApps.forEach((appInfo, index) => {
-      const row = new St.Button({ style_class: 'nexus-app-row', x_expand: true, reactive: true, can_focus: true });
+      const row = new St.Button({ style_class: 'nexus-app-row', x_expand: true, y_expand: false, reactive: true, can_focus: true });
       const gicon = appInfo.get_icon() || new Gio.ThemedIcon({ name: 'application-x-executable' });
 
-      const content = new St.BoxLayout({ style_class: 'nexus-app-row-content', vertical: false, x_expand: true, y_expand: true });
+      const content = new St.BoxLayout({ style_class: 'nexus-app-row-content', vertical: false, x_expand: true, y_expand: false });
       content.add_child(new St.Icon({ gicon, icon_size: 38, style_class: 'nexus-app-icon' }));
 
       // St.Label does not expose an "ellipsize" construct property on recent
