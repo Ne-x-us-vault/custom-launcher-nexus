@@ -43,7 +43,9 @@ export default class NexusLauncherExtension extends Extension {
         this._keybinding,
         this._settings,
         Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
-        Shell.ActionMode.ALL,
+        // ALL intentionally excludes POPUP. Include it so the same shortcut
+        // is delivered while our modal overlay owns the keyboard grab.
+        Shell.ActionMode.ALL | Shell.ActionMode.POPUP,
         () => this._toggleOverlay()
       );
 

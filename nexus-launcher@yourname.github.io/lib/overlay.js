@@ -33,17 +33,11 @@ export default class NexusOverlay {
       console.log('[NexusOverlay] overlay built');
       Main.uiGroup.add_child(this._actor);
 
-      try {
-        this._grab = Main.pushModal(this._actor);
-      } catch (e) {
-        console.log(`[NexusOverlay] Main.pushModal warning: ${e}`);
-      }
-
       this.visible = true;
 
-      // Key events are delivered to the modal actor and bubble from the search
-      // entry to this handler. Connecting to global.stage causes warnings on
-      // GNOME 50 and makes Escape unreliable while the entry has focus.
+      // Do not use Main.pushModal(): its keyboard grab prevents our global
+      // keybinding from firing a second time to close the launcher. The actor
+      // still fills the stage and owns focus, giving us overlay behaviour.
       if (this._keyPressId === null) {
         this._keyPressId = this._actor.connect(
           'key-press-event',
@@ -82,15 +76,6 @@ export default class NexusOverlay {
     if (this._keyPressId !== null && this._actor) {
       this._actor.disconnect(this._keyPressId);
       this._keyPressId = null;
-    }
-
-    if (this._grab) {
-      try {
-        Main.popModal(this._grab);
-      } catch (e) {
-        console.log(`[NexusOverlay] Main.popModal warning: ${e}`);
-      }
-      this._grab = null;
     }
 
     this._disconnectSignals();
@@ -196,13 +181,6 @@ export default class NexusOverlay {
     }
 
     const key = event.get_key_symbol();
-    const state = event.get_state();
-    if ((state & Clutter.ModifierType.SUPER_MASK) &&
-        (key === Clutter.KEY_Return || key === Clutter.KEY_KP_Enter)) {
-      this.close();
-      return Clutter.EVENT_STOP;
-    }
-
     if (key === Clutter.KEY_Escape) {
       this.close();
       return Clutter.EVENT_STOP;
