@@ -24,6 +24,16 @@ Nexus Launcher opens with a shortcut, searches installed applications instantly,
 - Optional native GNOME search-provider results plus a safe web-search fallback
 - Supports GNOME Shell **45–50** on Wayland and Xorg
 
+## Preview
+
+### Launcher overlay
+
+![Nexus Launcher overlay](nexus-launcher@Ne-x-us-vault.github.io/assets/screenshots/Screenshot%20From%202026-08-03%2002-27-40.png)
+
+### Preferences
+
+![Nexus Launcher preferences](nexus-launcher@Ne-x-us-vault.github.io/assets/screenshots/Screenshot%20From%202026-08-03%2002-28-12.png)
+
 ## Tech stack
 
 | Layer | Technology |
