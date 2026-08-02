@@ -17,7 +17,6 @@ export default class NexusOverlay {
     this._surface = null;
     this._identityPanel = null;
     this._card = null;
-    this._grab = null;
     this._settingsSignals = [];
     this._keyPressId = null;
     this._entryKeyPressId = null;
@@ -32,15 +31,12 @@ export default class NexusOverlay {
   }
 
   open() {
-    console.log('[NexusOverlay] open() called');
     if (this.visible) {
-      console.log('[NexusOverlay] overlay already visible');
       return;
     }
 
     try {
       this._build();
-      console.log('[NexusOverlay] overlay built');
       Main.uiGroup.add_child(this._actor);
 
       this.visible = true;
@@ -71,9 +67,9 @@ export default class NexusOverlay {
         this._searchBar.focus();
       }
     } catch (e) {
-      console.log(`[NexusOverlay] open error: ${e}`);
+      console.error(`[NexusOverlay] could not open: ${e}`);
       if (e && e.stack) {
-        console.log(e.stack);
+        console.error(e.stack);
       }
 
       // A failed build must not leave a partial actor tree behind; otherwise a
@@ -83,7 +79,6 @@ export default class NexusOverlay {
         this._actor.destroy();
         this._actor = null;
       }
-      this._grab = null;
     }
   }
 
@@ -92,7 +87,6 @@ export default class NexusOverlay {
       return;
     }
 
-    console.log('[NexusOverlay] close() called');
     this.visible = false;
     if (this._universalSearchTimeoutId) {
       GLib.source_remove(this._universalSearchTimeoutId);
@@ -128,6 +122,9 @@ export default class NexusOverlay {
   }
 
   _build() {
+    // A previous session may have ended while a dock action was selected.
+    // Each newly opened launcher should start with application navigation.
+    this._keyboardSection = 'apps';
     this._actor = new St.Widget({
       reactive: true,
       can_focus: true,

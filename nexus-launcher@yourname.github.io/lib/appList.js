@@ -105,11 +105,13 @@ export default class AppList {
       row.connect('clicked', () => this._onItemActivate(index));
       row.connect('enter-event', () => {
         row.add_style_pseudo_class('hover');
-        return Clutter.EVENT_STOP;
+        // Hover styling must not consume the pointer event. Consuming it
+        // produces Clutter runtime warnings and can interfere with scrolling.
+        return Clutter.EVENT_PROPAGATE;
       });
       row.connect('leave-event', () => {
         row.remove_style_pseudo_class('hover');
-        return Clutter.EVENT_STOP;
+        return Clutter.EVENT_PROPAGATE;
       });
 
       this._list.add_child(row);

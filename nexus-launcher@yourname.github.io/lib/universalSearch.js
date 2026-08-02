@@ -6,7 +6,10 @@ const PROVIDER_INTERFACE = 'org.gnome.Shell.SearchProvider2';
 
 function call(proxy, method, parameters) {
   return new Promise((resolve, reject) => {
-    proxy.call(method, parameters, Gio.DBusCallFlags.NONE, 1500, null, (source, result) => {
+    // Do not launch every installed Shell search provider while the user is
+    // typing. Providers that are already available contribute results; the
+    // built-in web result is always available and app search remains instant.
+    proxy.call(method, parameters, Gio.DBusCallFlags.NO_AUTO_START, 1500, null, (source, result) => {
       try {
         resolve(source.call_finish(result));
       } catch (error) {
@@ -49,7 +52,7 @@ export default class UniversalSearch {
       }
       enumerator.close(null);
     } catch (error) {
-      console.log(`[NexusLauncher] could not load native search providers: ${error}`);
+      console.error(`[NexusLauncher] could not load native search providers: ${error}`);
     }
     return providers;
   }
