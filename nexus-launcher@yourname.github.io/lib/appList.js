@@ -10,6 +10,8 @@ const CARD_SIZES = {
   large: { width: 500, height: 520 },
 };
 
+const ROW_SCROLL_STEP = 76;
+
 export default class AppList {
   constructor(settings, onLaunch) {
     this._settings = settings;
@@ -26,7 +28,9 @@ export default class AppList {
 
   _build() {
     this._root = new St.BoxLayout({ style_class: 'nexus-list-card', vertical: true, x_expand: false, y_expand: false });
-    this._scrollView = new St.ScrollView({ style_class: 'nexus-app-list-scrollview', overlay_scrollbars: true, x_expand: true, y_expand: true });
+    this._scrollView = new St.ScrollView({ style_class: 'nexus-app-list-scrollview', overlay_scrollbars: false, x_expand: true, y_expand: true });
+    this._root.set_clip_to_allocation(true);
+    this._scrollView.set_clip_to_allocation(true);
     this._list = new St.BoxLayout({ style_class: 'nexus-app-list', vertical: true, x_expand: true, y_expand: true });
     this._scrollView.set_child(this._list);
     this._root.add_child(this._scrollView);
@@ -119,15 +123,78 @@ export default class AppList {
     this._selectedIndex = index;
     if (children[this._selectedIndex]) {
       children[this._selectedIndex].add_style_pseudo_class('selected');
-      // GNOME Shell 50 exposes the vertical adjustment directly.  Retain the
-      // older access paths for the Shell versions this extension supports.
-      const adjustment = this._scrollView.get_vadjustment?.()
-        ?? this._scrollView.vadjustment
-        ?? this._scrollView.vscroll?.adjustment;
-      if (adjustment) {
-        adjustment.set_value(this._selectedIndex * 72);
-      }
+      this._scrollSelectedIntoView();
     }
+  }
+
+  _scrollSelectedIntoView() {
+    const adjustment = this._getVerticalAdjustment();
+    const selectedActor = this._list.get_children()[this._selectedIndex];
+    if (!adjustment || !selectedActor) {
+      return;
+    }
+
+    const current = adjustment.value ?? adjustment.get_value?.() ?? 0;
+    const pageSize = adjustment.pageSize
+      ?? adjustment.page_size
+      ?? adjustment.get_page_size?.()
+      ?? 0;
+    const upper = adjustment.upper ?? adjustment.get_upper?.() ?? 0;
+    if (pageSize <= 0) {
+      return;
+    }
+
+    const maximum = Math.max(0, upper - pageSize);
+    // Reserve a complete row below the keyboard selection. Besides giving the
+    // highlight room to breathe, this prevents the following label from being
+    // cut off at the viewport edge.
+    const breathingRoom = ROW_SCROLL_STEP + 12;
+    const box = selectedActor.get_allocation_box();
+    let rowTop = box.y1;
+    let rowBottom = box.y2;
+    let parent = selectedActor.get_parent();
+
+    // Convert the selected row's allocation to the scroll view's coordinate
+    // system. This works regardless of CSS row padding, margins, or scale.
+    while (parent && parent !== this._scrollView) {
+      const parentBox = parent.get_allocation_box();
+      rowTop += parentBox.y1;
+      rowBottom += parentBox.y1;
+      parent = parent.get_parent();
+    }
+    if (parent !== this._scrollView) {
+      return;
+    }
+
+    if (rowTop < current + breathingRoom) {
+      adjustment.set_value(Math.max(0, rowTop - breathingRoom));
+    } else if (rowBottom > current + pageSize - breathingRoom) {
+      adjustment.set_value(Math.min(maximum, rowBottom + breathingRoom - pageSize));
+    }
+  }
+
+  _getVerticalAdjustment() {
+    // GNOME Shell 50 exposes the vertical adjustment directly. Retain the
+    // older access paths for the Shell versions this extension supports.
+    return this._scrollView.get_vadjustment?.()
+      ?? this._scrollView.vadjustment
+      ?? this._scrollView.vscroll?.adjustment;
+  }
+
+  scrollBy(delta) {
+    const adjustment = this._getVerticalAdjustment();
+    if (!adjustment || !Number.isFinite(delta) || delta === 0) {
+      return;
+    }
+
+    const current = adjustment.value ?? adjustment.get_value?.() ?? 0;
+    const upper = adjustment.upper ?? adjustment.get_upper?.() ?? 0;
+    const pageSize = adjustment.pageSize
+      ?? adjustment.page_size
+      ?? adjustment.get_page_size?.()
+      ?? 0;
+    const maximum = Math.max(0, upper - pageSize);
+    adjustment.set_value(Math.max(0, Math.min(maximum, current + delta)));
   }
 
   activateSelected() {

@@ -18,6 +18,8 @@ export default class NexusOverlay {
     this._grab = null;
     this._settingsSignals = [];
     this._keyPressId = null;
+    this._entryKeyPressId = null;
+    this._scrollEventId = null;
     this._searchBar = null;
     this._appList = null;
     this._dockBar = null;
@@ -44,6 +46,18 @@ export default class NexusOverlay {
         this._keyPressId = this._actor.connect(
           'key-press-event',
           (_, event) => this._onKeyPress(event)
+        );
+      }
+      if (this._entryKeyPressId === null && this._searchBar?.entry?.clutter_text) {
+        this._entryKeyPressId = this._searchBar.entry.clutter_text.connect(
+          'key-press-event',
+          (_, event) => this._onKeyPress(event)
+        );
+      }
+      if (this._scrollEventId === null) {
+        this._scrollEventId = this._actor.connect(
+          'scroll-event',
+          (_, event) => this._onScroll(event)
         );
       }
 
@@ -78,6 +92,14 @@ export default class NexusOverlay {
     if (this._keyPressId !== null && this._actor) {
       this._actor.disconnect(this._keyPressId);
       this._keyPressId = null;
+    }
+    if (this._entryKeyPressId !== null && this._searchBar?.entry?.clutter_text) {
+      this._searchBar.entry.clutter_text.disconnect(this._entryKeyPressId);
+      this._entryKeyPressId = null;
+    }
+    if (this._scrollEventId !== null && this._actor) {
+      this._actor.disconnect(this._scrollEventId);
+      this._scrollEventId = null;
     }
 
     this._disconnectSignals();
@@ -226,6 +248,29 @@ export default class NexusOverlay {
       if (this._appList) {
         this._appList.activateSelected();
       }
+      return Clutter.EVENT_STOP;
+    }
+    return Clutter.EVENT_PROPAGATE;
+  }
+
+  _onScroll(event) {
+    if (!this.visible || !this._appList) {
+      return Clutter.EVENT_PROPAGATE;
+    }
+
+    const direction = event.get_scroll_direction();
+    let delta = 0;
+    if (direction === Clutter.ScrollDirection.UP) {
+      delta = -76;
+    } else if (direction === Clutter.ScrollDirection.DOWN) {
+      delta = 76;
+    } else if (direction === Clutter.ScrollDirection.SMOOTH) {
+      const [, deltaY] = event.get_scroll_delta();
+      delta = deltaY * 96;
+    }
+
+    if (delta !== 0) {
+      this._appList.scrollBy(delta);
       return Clutter.EVENT_STOP;
     }
     return Clutter.EVENT_PROPAGATE;
