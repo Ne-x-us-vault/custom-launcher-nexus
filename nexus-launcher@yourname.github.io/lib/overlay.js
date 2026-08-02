@@ -24,6 +24,7 @@ export default class NexusOverlay {
     this._scrollEventId = null;
     this._universalSearchTimeoutId = 0;
     this._searchGeneration = 0;
+    this._keyboardSection = 'apps';
     this._searchBar = null;
     this._appList = null;
     this._dockBar = null;
@@ -231,9 +232,11 @@ export default class NexusOverlay {
   }
 
   _applyOpacity() {
-    if (!this._settings || !this._card) return;
+    if (!this._settings || !this._surface) return;
     const opacity = this._settings.get_double('opacity');
-    this._card.set_style(`background-color: rgba(10, 15, 20, ${Math.min(opacity, 0.70)});`);
+    // Apply this to the complete glass surface so changes are immediately
+    // visible, including the left identity panel and dock.
+    this._surface.opacity = Math.round(Math.max(0.2, Math.min(1, opacity)) * 255);
   }
 
   _onSearchChanged(query) {
@@ -279,19 +282,28 @@ export default class NexusOverlay {
     }
 
     if (key === Clutter.KEY_Up) {
+      this._keyboardSection = 'apps';
       if (this._appList) {
         this._appList.moveSelection(-1);
       }
       return Clutter.EVENT_STOP;
     }
     if (key === Clutter.KEY_Down || key === Clutter.KEY_Tab) {
+      this._keyboardSection = 'apps';
       if (this._appList) {
         this._appList.moveSelection(1);
       }
       return Clutter.EVENT_STOP;
     }
+    if (key === Clutter.KEY_Left || key === Clutter.KEY_Right) {
+      this._keyboardSection = 'dock';
+      this._dockBar?.moveSelection(key === Clutter.KEY_Left ? -1 : 1);
+      return Clutter.EVENT_STOP;
+    }
     if (key === Clutter.KEY_Return || key === Clutter.KEY_KP_Enter) {
-      if (this._appList) {
+      if (this._keyboardSection === 'dock') {
+        this._dockBar?.activateSelected();
+      } else if (this._appList) {
         this._appList.activateSelected();
       }
       return Clutter.EVENT_STOP;

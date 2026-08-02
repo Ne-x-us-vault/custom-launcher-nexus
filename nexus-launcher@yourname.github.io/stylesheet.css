@@ -149,6 +149,12 @@
   background-color: rgba(232, 241, 246, 0.16);
 }
 
+.nexus-dock-btn:selected,
+.nexus-dock-btn:selected:hover {
+  background-color: rgba(232, 241, 246, 0.28);
+  border: 1px solid rgba(246, 250, 252, 0.46);
+}
+
 .nexus-dock-btn StIcon {
   color: rgba(246, 250, 252, 0.96);
 }

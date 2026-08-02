@@ -6,6 +6,9 @@ export default class DockBar {
   constructor(settings, onLaunch) {
     this._settings = settings;
     this._onLaunch = onLaunch;
+    this._buttons = [];
+    this._callbacks = [];
+    this._selectedIndex = -1;
     this._iconsDirectory = Gio.File.new_for_uri(import.meta.url)
       .get_parent()
       .get_parent()
@@ -25,6 +28,9 @@ export default class DockBar {
 
   refresh() {
     this._container.remove_all_children();
+    this._buttons = [];
+    this._callbacks = [];
+    this._selectedIndex = -1;
     this._addActionButton('utilities-terminal-symbolic', 'Open Terminal', () => {
       this._launchFirstAvailable([
         // Fedora/GNOME's current terminal is Ptyxis. Keep the older IDs as
@@ -57,8 +63,7 @@ export default class DockBar {
       const icon = appInfo.get_icon() || new Gio.ThemedIcon({ name: 'application-x-executable' });
       const button = new St.Button({ style_class: 'nexus-dock-btn', reactive: true, can_focus: true });
       button.set_child(new St.Icon({ gicon: icon, icon_size: 24 }));
-      button.connect('clicked', () => this._onLaunch(appInfo));
-      this._container.add_child(button);
+      this._addButton(button, () => this._onLaunch(appInfo));
     });
   }
 
@@ -72,8 +77,38 @@ export default class DockBar {
       ? {icon_name: icon, icon_size: 20}
       : {gicon: icon, icon_size: 20};
     button.set_child(new St.Icon(iconProperties));
+    this._addButton(button, callback);
+  }
+
+  _addButton(button, callback) {
     button.connect('clicked', callback);
+    this._buttons.push(button);
+    this._callbacks.push(callback);
     this._container.add_child(button);
+  }
+
+  moveSelection(delta) {
+    if (!this._buttons.length)
+      return;
+
+    const next = Math.max(0, Math.min(
+      this._buttons.length - 1,
+      this._selectedIndex + delta
+    ));
+    this._selectIndex(next);
+  }
+
+  _selectIndex(index) {
+    if (this._selectedIndex >= 0)
+      this._buttons[this._selectedIndex]?.remove_style_pseudo_class('selected');
+
+    this._selectedIndex = index;
+    this._buttons[index]?.add_style_pseudo_class('selected');
+  }
+
+  activateSelected() {
+    if (this._selectedIndex >= 0)
+      this._callbacks[this._selectedIndex]?.();
   }
 
   _launchFirstAvailable(desktopIds) {
