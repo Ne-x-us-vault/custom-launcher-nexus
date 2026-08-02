@@ -11,6 +11,8 @@
 
 Nexus Launcher opens with a shortcut, searches installed applications instantly, and provides a clean workspace for launching apps and essential quick actions without leaving your current task.
 
+> The extension source lives in [`nexus-launcher@yourname.github.io/`](nexus-launcher@yourname.github.io/).
+
 ## Highlights
 
 - Frost-glass overlay with a dimmed backdrop and click-outside close behaviour
@@ -99,6 +101,7 @@ gnome-extensions prefs custom-launcher@nexus.dev
 Run the release checks and create a fresh package:
 
 ```bash
+cd nexus-launcher@yourname.github.io
 node --check extension.js
 for file in lib/*.js prefs.js; do node --check "$file"; done
 glib-compile-schemas --strict schemas
@@ -106,14 +109,14 @@ glib-compile-schemas --strict schemas
 unzip -t custom-launcher@nexus.dev.zip
 ```
 
-To publish a release after committing your changes:
+To publish a future release after committing:
 
 ```bash
-git tag -a v1.0.0 -m "Nexus Launcher v1.0.0"
+git tag -a vX.Y.Z -m "Nexus Launcher vX.Y.Z"
 git push origin main --tags
 ```
 
-Create the GitHub Release from the `v1.0.0` tag and attach `custom-launcher@nexus.dev.zip` as the installable asset.
+Create a GitHub Release from the tag and attach `nexus-launcher@yourname.github.io/custom-launcher@nexus.dev.zip` as the installable asset.
 
 ## Troubleshooting
 

@@ -1,0 +1,10 @@
+# Generated extension packages and schemas
+nexus-launcher@yourname.github.io/*.zip
+nexus-launcher@yourname.github.io/schemas/gschemas.compiled
+
+# Local editor and operating-system files
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
