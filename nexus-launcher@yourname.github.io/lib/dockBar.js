@@ -11,7 +11,11 @@ export default class DockBar {
       .get_parent()
       .get_child('assets');
     this._container = this._build();
-    this._settingsSignal = this._settings.connect('changed::dock-apps', () => this.refresh());
+    this._settingsSignals = [
+      this._settings.connect('changed::dock-apps', () => this.refresh()),
+      this._settings.connect('changed::github-url', () => this.refresh()),
+      this._settings.connect('changed::linkedin-url', () => this.refresh()),
+    ];
     this.refresh();
   }
 
@@ -36,10 +40,10 @@ export default class DockBar {
       this._launchFirstAvailable(['org.gnome.Nautilus.desktop', 'nautilus.desktop']);
     });
     this._addActionButton(this._brandIcon('github.svg'), 'Open Ne-x-us-vault on GitHub', () => {
-      this._launchUri('https://github.com/Ne-x-us-vault');
+      this._launchUri(this._settings.get_string('github-url'));
     });
     this._addActionButton(this._brandIcon('linkedin.svg'), 'Open Jaswa J R on LinkedIn', () => {
-      this._launchUri('https://www.linkedin.com/in/jaswa-j-r/');
+      this._launchUri(this._settings.get_string('linkedin-url'));
     });
 
     const pinnedApps = this._settings.get_strv('dock-apps');
@@ -101,10 +105,8 @@ export default class DockBar {
   }
 
   destroy() {
-    if (this._settingsSignal) {
-      this._settings.disconnect(this._settingsSignal);
-      this._settingsSignal = null;
-    }
+    this._settingsSignals.forEach(id => this._settings.disconnect(id));
+    this._settingsSignals = [];
     this._container.destroy();
   }
 }

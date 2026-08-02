@@ -36,5 +36,15 @@
       <summary>Overlay opacity</summary>
       <description>Opacity of the launcher cards' background.</description>
     </key>
+    <key name="github-url" type="s">
+      <default>"https://github.com/Ne-x-us-vault"</default>
+      <summary>GitHub link</summary>
+      <description>URL opened by the GitHub quick-action pill.</description>
+    </key>
+    <key name="linkedin-url" type="s">
+      <default>"https://www.linkedin.com/in/jaswa-j-r/"</default>
+      <summary>LinkedIn link</summary>
+      <description>URL opened by the LinkedIn quick-action pill.</description>
+    </key>
   </schema>
 </schemalist>
