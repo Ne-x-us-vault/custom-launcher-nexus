@@ -5,9 +5,9 @@ import Pango from 'gi://Pango';
 import AppUtils from './appUtils.js';
 
 const CARD_SIZES = {
-  small: { width: 340, height: 360 },
-  medium: { width: 360, height: 420 },
-  large: { width: 400, height: 480 },
+  small: { width: 420, height: 400 },
+  medium: { width: 446, height: 480 },
+  large: { width: 500, height: 520 },
 };
 
 export default class AppList {
@@ -61,7 +61,7 @@ export default class AppList {
       const gicon = appInfo.get_icon() || new Gio.ThemedIcon({ name: 'application-x-executable' });
 
       const content = new St.BoxLayout({ style_class: 'nexus-app-row-content', vertical: false, x_expand: true, y_expand: true });
-      content.add_child(new St.Icon({ gicon, icon_size: 32, style_class: 'nexus-app-icon' }));
+      content.add_child(new St.Icon({ gicon, icon_size: 38, style_class: 'nexus-app-icon' }));
 
       // St.Label does not expose an "ellipsize" construct property on recent
       // GNOME Shell versions.  The property belongs to its ClutterText child.

@@ -12,6 +12,8 @@ export default class NexusOverlay {
     this.visible = false;
     this._actor = null;
     this._backdrop = null;
+    this._surface = null;
+    this._identityPanel = null;
     this._card = null;
     this._grab = null;
     this._settingsSignals = [];
@@ -118,24 +120,46 @@ export default class NexusOverlay {
     });
     this._actor.add_child(this._backdrop);
 
-    // Central Card
+    // Visual shell: the identity panel mirrors the reference layout, while
+    // the existing app card keeps all search and launch behaviour unchanged.
+    this._surface = new St.BoxLayout({
+      style_class: 'nexus-launcher-surface',
+      vertical: false,
+      x_align: Clutter.ActorAlign.CENTER,
+      y_align: Clutter.ActorAlign.CENTER,
+    });
+    this._surface.set_size(1008, 600);
+
+    this._identityPanel = new St.BoxLayout({
+      style_class: 'nexus-left-card',
+      vertical: true,
+      x_expand: true,
+      y_expand: true,
+    });
+
+    this._searchBar = new SearchBar(this._settings, (query) => this._onSearchChanged(query));
+    this._identityPanel.add_child(this._searchBar.actor);
+    this._identityPanel.add_child(new St.Widget({ x_expand: true, y_expand: true }));
+
+    // Application card
     this._card = new St.BoxLayout({
       style_class: 'nexus-right-card',
       vertical: true,
       reactive: true,
+      y_expand: true,
       x_align: Clutter.ActorAlign.CENTER,
       y_align: Clutter.ActorAlign.CENTER,
     });
 
-    this._searchBar = new SearchBar(this._settings, (query) => this._onSearchChanged(query));
     this._appList = new AppList(this._settings, (appInfo) => this._launchAndClose(appInfo));
     this._dockBar = new DockBar(this._settings, (appInfo) => this._launchAndClose(appInfo));
 
-    this._card.add_child(this._searchBar.actor);
     this._card.add_child(this._appList.actor);
-    this._card.add_child(this._dockBar.actor);
+    this._identityPanel.add_child(this._dockBar.actor);
 
-    this._actor.add_child(this._card);
+    this._surface.add_child(this._identityPanel);
+    this._surface.add_child(this._card);
+    this._actor.add_child(this._surface);
 
     this._applyOpacity();
     this._connectSettings();
@@ -161,7 +185,7 @@ export default class NexusOverlay {
   _applyOpacity() {
     if (!this._settings || !this._card) return;
     const opacity = this._settings.get_double('opacity');
-    this._card.set_style(`background-color: rgba(18, 18, 18, ${opacity});`);
+    this._card.set_style(`background-color: rgba(10, 15, 20, ${Math.min(opacity, 0.70)});`);
   }
 
   _onSearchChanged(query) {
@@ -229,5 +253,7 @@ export default class NexusOverlay {
     }
     this._card = null;
     this._backdrop = null;
+    this._surface = null;
+    this._identityPanel = null;
   }
 }

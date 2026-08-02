@@ -1,4 +1,5 @@
 import St from 'gi://St';
+import Clutter from 'gi://Clutter';
 
 export default class SearchBar {
   constructor(settings, onSearchChanged) {
@@ -11,7 +12,12 @@ export default class SearchBar {
 
   _build() {
     this.actor = new St.BoxLayout({ style_class: 'nexus-search-widget', vertical: false, x_expand: true, y_expand: false });
-    this._searchIcon = new St.Icon({ icon_name: 'system-search-symbolic', style_class: 'nexus-search-icon' });
+    this._searchIcon = new St.Icon({
+      icon_name: 'go-next-symbolic',
+      icon_size: 18,
+      y_align: Clutter.ActorAlign.CENTER,
+      style_class: 'nexus-search-icon',
+    });
     this._entry = new St.Entry({ style_class: 'nexus-search-entry', x_expand: true, hint_text: this._settings.get_string('search-hint') });
     this.entry = this._entry;
 
