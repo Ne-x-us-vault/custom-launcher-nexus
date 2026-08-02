@@ -43,7 +43,10 @@ export default class NexusLauncherPreferences extends ExtensionPreferences {
     }
 
     const settings = this.getSettings();
-    const page = new Adw.PreferencesPage();
+    window.set_title(_('Nexus Launcher Preferences'));
+    window.set_default_size(620, 720);
+
+    const page = new Adw.PreferencesPage({ title: _('Nexus Launcher') });
 
     page.add(this._buildHotkeyGroup(settings));
     page.add(this._buildDockGroup(settings, window));
@@ -56,8 +59,17 @@ export default class NexusLauncherPreferences extends ExtensionPreferences {
   _buildHotkeyGroup(settings) {
     const group = new Adw.PreferencesGroup({ title: _('Hotkey') });
 
-    const hotkeyRow = new Adw.ActionRow({ title: _('Toggle launcher'), subtitle: _('Press a hotkey to open or close Nexus Launcher.'), });
-    const hotkeyEntry = new Gtk.Entry({ text: settings.get_strv('hotkey').join(', '), editable: false, hexpand: true, placeholder_text: _('Press a key combination'), });
+    const hotkeyRow = new Adw.ActionRow({
+      title: _('Toggle launcher'),
+      subtitle: _('Click the shortcut, then press the combination you want to use.'),
+    });
+    const hotkeyEntry = new Gtk.Entry({
+      text: settings.get_strv('hotkey').join(', '),
+      editable: false,
+      can_focus: true,
+      hexpand: true,
+      placeholder_text: _('Press a key combination'),
+    });
 
     const keyController = new Gtk.EventControllerKey();
     keyController.connect('key-pressed', (_, keyval, _keycode, state) => {
@@ -84,16 +96,18 @@ export default class NexusLauncherPreferences extends ExtensionPreferences {
   }
 
   _buildDockGroup(settings, window) {
-    const group = new Adw.PreferencesGroup({ title: _('Dock Apps') });
+    const group = new Adw.PreferencesGroup({
+      title: _('Dock Apps'),
+      description: _('The Terminal, Files, GitHub and LinkedIn pills are always shown. Add optional application shortcuts below.'),
+    });
     this._dockSettings = settings;
+    this._dockGroup = group;
+    this._dockRows = [];
 
-    const subtitle = new Adw.ActionRow({ title: _('Pinned applications'), subtitle: _('Configure the dock icons shown in the launcher.'), });
-    group.add(subtitle);
-
-    this._dockBox = new Gtk.Box({ orientation: Gtk.Orientation.VERTICAL, spacing: 8, margin_top: 6 });
-    group.add(this._dockBox);
-
-    const addRow = new Adw.ActionRow({ title: _('Add pinned app') });
+    const addRow = new Adw.ActionRow({
+      title: _('Pinned applications'),
+      subtitle: _('Add an app, then use the arrows to set its order.'),
+    });
     const addButton = new Gtk.Button({ label: _('Add') });
     addButton.connect('clicked', () => this._showAppChooser(window));
     addRow.add_suffix(addButton);
@@ -127,20 +141,30 @@ export default class NexusLauncherPreferences extends ExtensionPreferences {
   }
 
   _refreshDockRows() {
-    if (!this._dockBox) {
+    if (!this._dockGroup) {
       return;
     }
 
-    let child = this._dockBox.get_first_child();
-    while (child) {
-      const next = child.get_next_sibling();
-      this._dockBox.remove(child);
-      child = next;
-    }
+    this._dockRows.forEach(row => this._dockGroup.remove(row));
+    this._dockRows = [];
 
     const apps = this._dockSettings.get_strv('dock-apps');
+    if (apps.length === 0) {
+      const emptyRow = new Adw.ActionRow({
+        title: _('No pinned applications'),
+        subtitle: _('Select Add to put an application in the launcher dock.'),
+      });
+      emptyRow.add_css_class('property');
+      this._dockGroup.add(emptyRow);
+      this._dockRows.push(emptyRow);
+      return;
+    }
+
     apps.forEach((appId, index) => {
-      const row = new Adw.ActionRow({ title: getAppName(appId) });
+      const row = new Adw.ActionRow({
+        title: getAppName(appId),
+        subtitle: appId,
+      });
       const controls = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, spacing: 6 });
 
       const upButton = new Gtk.Button({ label: '↑', tooltip_text: _('Move up') });
@@ -156,7 +180,8 @@ export default class NexusLauncherPreferences extends ExtensionPreferences {
       controls.append(removeButton);
 
       row.add_suffix(controls);
-      this._dockBox.append(row);
+      this._dockGroup.add(row);
+      this._dockRows.push(row);
     });
   }
 

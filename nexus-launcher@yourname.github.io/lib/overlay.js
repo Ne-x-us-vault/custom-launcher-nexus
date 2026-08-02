@@ -199,8 +199,7 @@ export default class NexusOverlay {
     this._appList = new AppList(this._settings, (appInfo) => this._launchAndClose(appInfo));
     this._dockBar = new DockBar(
       this._settings,
-      appInfo => this._launchAndClose(appInfo),
-      () => this._openPowerDialog()
+      appInfo => this._launchAndClose(appInfo)
     );
 
     this._card.add_child(this._appList.actor);
@@ -266,15 +265,6 @@ export default class NexusOverlay {
     if (appInfo)
       AppUtils.launchApp(appInfo);
     this.close();
-  }
-
-  _openPowerDialog() {
-    this.close();
-    try {
-      Main.shutdownDialog.open(global.get_current_time(), 0);
-    } catch (error) {
-      console.log(`[NexusLauncher] could not open power dialog: ${error}`);
-    }
   }
 
   _onKeyPress(event) {
