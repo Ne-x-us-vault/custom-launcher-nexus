@@ -32,9 +32,44 @@
       <description>Controls the layout scale of the launcher cards.</description>
     </key>
     <key name="opacity" type="d">
-      <default>0.92</default>
+      <default>1.0</default>
       <summary>Overlay opacity</summary>
-      <description>Opacity of the launcher cards' background.</description>
+      <description>Overall opacity of the entire launcher overlay.</description>
+    </key>
+    <key name="surface-color" type="s">
+      <default>"#10432c"</default>
+      <summary>Surface color</summary>
+      <description>Background color of the main launcher surface.</description>
+    </key>
+    <key name="surface-opacity" type="d">
+      <default>0.15</default>
+      <summary>Surface opacity</summary>
+      <description>Opacity of the main launcher surface background color.</description>
+    </key>
+    <key name="card-color" type="s">
+      <default>"#0a0f14"</default>
+      <summary>Card color</summary>
+      <description>Background color of the app card panel.</description>
+    </key>
+    <key name="card-opacity" type="d">
+      <default>0.88</default>
+      <summary>Card opacity</summary>
+      <description>Opacity of the app card panel background color.</description>
+    </key>
+    <key name="blur-enabled" type="b">
+      <default>true</default>
+      <summary>Enable blur</summary>
+      <description>Whether the frost-glass blur effect is applied to the launcher surface.</description>
+    </key>
+    <key name="blur-radius" type="d">
+      <default>8.87</default>
+      <summary>Blur radius</summary>
+      <description>Strength of the frost-glass blur applied to the launcher surface.</description>
+    </key>
+    <key name="magnification" type="d">
+      <default>1.2</default>
+      <summary>Glass magnification</summary>
+      <description>How much the launcher surface magnifies the background behind it, like looking through a thick pane of glass.</description>
     </key>
     <key name="github-url" type="s">
       <default>"https://github.com/Ne-x-us-vault"</default>

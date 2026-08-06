@@ -31,8 +31,9 @@ export default class UniversalSearch {
 
   _loadProviders() {
     const providers = [];
+    let directory;
     try {
-      const directory = Gio.File.new_for_path(PROVIDER_DIR);
+      directory = Gio.File.new_for_path(PROVIDER_DIR);
       const enumerator = directory.enumerate_children(
         'standard::name', Gio.FileQueryInfoFlags.NONE, null
       );
@@ -40,15 +41,20 @@ export default class UniversalSearch {
       while ((info = enumerator.next_file(null))) {
         if (!info.get_name().endsWith('.ini'))
           continue;
-        const keyFile = new GLib.KeyFile();
-        keyFile.load_from_file(`${PROVIDER_DIR}/${info.get_name()}`, GLib.KeyFileFlags.NONE);
-        const group = 'Shell Search Provider';
-        if (!keyFile.has_group(group))
-          continue;
-        providers.push({
-          busName: keyFile.get_string(group, 'BusName'),
-          objectPath: keyFile.get_string(group, 'ObjectPath'),
-        });
+        // A single malformed provider must never take the whole list down.
+        try {
+          const keyFile = new GLib.KeyFile();
+          keyFile.load_from_file(`${PROVIDER_DIR}/${info.get_name()}`, GLib.KeyFileFlags.NONE);
+          const group = 'Shell Search Provider';
+          if (!keyFile.has_group(group))
+            continue;
+          providers.push({
+            busName: keyFile.get_string(group, 'BusName'),
+            objectPath: keyFile.get_string(group, 'ObjectPath'),
+          });
+        } catch (error) {
+          console.log(`[NexusLauncher] skipping bad search provider ${info.get_name()}: ${error}`);
+        }
       }
       enumerator.close(null);
     } catch (error) {

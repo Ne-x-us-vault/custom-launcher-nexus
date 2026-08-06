@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+# Compile the schema shared by the standalone launcher and the Rofi theme.
+if command -v glib-compile-schemas >/dev/null 2>&1; then
+    glib-compile-schemas /usr/share/glib-2.0/schemas
+fi
+
+# Enable the GNOME Shell extension for the invoking user when present.
+if command -v gnome-extensions >/dev/null 2>&1; then
+    gnome-extensions enable custom-launcher@nexus.dev 2>/dev/null || true
+fi
+
+exit 0

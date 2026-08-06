@@ -1,12 +1,112 @@
 import St from 'gi://St';
 import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Cogl from 'gi://Cogl';
+import Shell from 'gi://Shell';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import AppUtils from './appUtils.js';
 import SearchBar from './searchBar.js';
 import DockBar from './dockBar.js';
 import AppList from './appList.js';
 import UniversalSearch from './universalSearch.js';
+
+const _blurPropertyNames = Shell.BlurEffect
+  ? Shell.BlurEffect.list_properties().map(property => property.name)
+  : [];
+const _blurUsesRadius = _blurPropertyNames.includes('radius');
+const _blurUsesSigma = _blurPropertyNames.includes('sigma');
+const _blurSupportsMode = !!(Shell && Shell.BlurMode);
+
+// The hook enum moved from Shell (removed in GNOME 48) to Cogl. Prefer the
+// Shell variant when present since it matches the enum type add_glsl_snippet
+// expects; fall back to Cogl on GNOME 48+. GLSLEffect itself needs GNOME 46+,
+// so when neither enum exists we fall back to the plain blurred-tint surface.
+const _glslHook = (Shell && Shell.SnippetHook)
+  ? Shell.SnippetHook
+  : (Cogl && Cogl.SnippetHook) || null;
+
+// Realistic thick-glass look: the surface magnifies the desktop behind it,
+// bends it like a convex lens, adds a hint of chromatic dispersion and only
+// then frosts it with the blur effect. The final mask cuts the pane to the
+// rounded surface corners.
+const _glassDeclarations = `
+uniform sampler2D tex;
+uniform vec2 uSize;
+uniform float uRadius;
+uniform float uMag;
+uniform float uRefraction;
+uniform vec4 uTint;
+
+void nexus_glass_main () {
+  vec2 uv = cogl_tex_coord_in[0].st;
+
+  vec2 cc = uv - 0.5;
+  float r2 = dot (cc, cc);
+  float bend = uRefraction * r2;
+
+  vec2 lensed = 0.5 + (uv - 0.5) * (1.0 / uMag);
+  lensed = mix (lensed, uv, bend);
+
+  float dispersion = uRefraction * r2 * 0.06;
+  vec2 offset = cc * dispersion;
+  vec4 col = vec4 (
+    texture2D (tex, lensed + offset).r,
+    texture2D (tex, lensed).g,
+    texture2D (tex, lensed - offset).b,
+    1.0);
+
+  col.rgb = mix (col.rgb, uTint.rgb, uTint.a);
+
+  vec2 halfSize = uSize * 0.5;
+  vec2 q = abs (uv * uSize - halfSize) - (halfSize - uRadius);
+  float dist = length (max (q, vec2 (0.0))) + min (max (q.x, q.y), 0.0) - uRadius;
+  float alpha = 1.0 - smoothstep (-1.0, 1.0, dist);
+
+  float sheen = (1.0 - smoothstep (0.0, 0.35, uv.y)) * 0.06;
+  float rim = exp (-abs (dist) * 0.04) * 0.10;
+  col.rgb += vec3 (sheen + rim);
+
+  col.a = alpha;
+  col.rgb *= col.a;
+
+  cogl_color_out = col;
+}
+`;
+
+const _glassCode = 'nexus_glass_main();';
+
+// Shell.GLSLEffect renders the actor into an offscreen texture whose sampling
+// we control, which is exactly what lets us magnify and refract the backdrop.
+const _NexusGlassEffect = Shell.GLSLEffect
+  ? GObject.registerClass({
+      GTypeName: 'NexusGlassEffect',
+    }, class NexusGlassEffect extends Shell.GLSLEffect {
+      vfunc_build_pipeline() {
+        if (_glslHook) {
+          this.add_glsl_snippet(_glslHook.FRAGMENT, _glassDeclarations, _glassCode, false);
+        }
+      }
+
+      vfunc_paint_target(...args) {
+        if (this._nexusUniforms) {
+          for (const name of this._nexusUniforms.keys()) {
+            const location = this.get_uniform_location(name);
+            if (location >= 0) {
+              const [components, value] = this._nexusUniforms.get(name);
+              this.set_uniform_float(location, components, value);
+            }
+          }
+        }
+        return super.vfunc_paint_target(...args);
+      }
+
+      setUniform(name, components, value) {
+        this._nexusUniforms = this._nexusUniforms || new Map();
+        this._nexusUniforms.set(name, [components, value]);
+      }
+    })
+  : null;
 
 export default class NexusOverlay {
   constructor(settings) {
@@ -27,6 +127,12 @@ export default class NexusOverlay {
     this._searchBar = null;
     this._appList = null;
     this._dockBar = null;
+    this._legacyBlurEffect = null;
+    this._desktopClone = null;
+    this._backdropView = null;
+    this._glassEffect = null;
+    this._frostEffect = null;
+    this._glassActive = false;
     this._universalSearch = new UniversalSearch();
   }
 
@@ -37,7 +143,10 @@ export default class NexusOverlay {
 
     try {
       this._build();
-      Main.uiGroup.add_child(this._actor);
+      // Added directly to the stage, above Main.uiGroup: the glass effect
+      // lives on a live clone of uiGroup, so the overlay must not be a
+      // child of its own clone source (that would recurse).
+      global.stage.add_child(this._actor);
 
       this.visible = true;
 
@@ -207,6 +316,7 @@ export default class NexusOverlay {
     this._surface.add_child(this._card);
     this._actor.add_child(this._surface);
 
+    this._applyGlass();
     this._applyOpacity();
     this._connectSettings();
   }
@@ -215,6 +325,17 @@ export default class NexusOverlay {
     if (!this._settings) return;
     this._settingsSignals.push(
       this._settings.connect('changed::opacity', () => this._applyOpacity()),
+      this._settings.connect('changed::surface-color', () => this._applyAppearance()),
+      this._settings.connect('changed::surface-opacity', () => this._applyAppearance()),
+      this._settings.connect('changed::card-color', () => this._applyAppearance()),
+      this._settings.connect('changed::card-opacity', () => this._applyAppearance()),
+      this._settings.connect('changed::blur-enabled', () => this._applyGlass()),
+      this._settings.connect('changed::blur-radius', () => this._applyGlass()),
+      this._settings.connect('changed::magnification', () => {
+        if (this._glassEffect) {
+          this._glassEffect.setUniform('uMag', 1, [this._settings.get_double('magnification')]);
+        }
+      }),
       this._settings.connect('changed::search-fields', () => {
         if (this._searchBar && this._appList) {
           this._appList.filter(this._searchBar.getText());
@@ -228,12 +349,200 @@ export default class NexusOverlay {
     );
   }
 
-  _applyOpacity() {
+  _applyAppearance() {
+    if (!this._settings) return;
+
+    if (this._glassActive) {
+      // With the lens pipeline active the surface itself must be clear: the
+      // tint now lives inside the glass shader so it sits over the backdrop.
+      if (this._surface) {
+        this._surface.set_style('background-color: transparent;');
+      }
+      if (this._glassEffect) {
+        this._glassEffect.setUniform('uTint', 4, this._tintRgba());
+      }
+    } else if (this._surface) {
+      this._surface.set_style(`background-color: ${this._colorWithOpacity('surface-color', 'surface-opacity')};`);
+    }
+
+    if (this._card) {
+      this._card.set_style(`background-color: ${this._colorWithOpacity('card-color', 'card-opacity')};`);
+    }
+  }
+
+  _tintRgba() {
+    const [r, g, b] = this._parseRgb(this._settings.get_string('surface-color'));
+    return [r / 255, g / 255, b / 255, this._settings.get_double('surface-opacity')];
+  }
+
+  _applyGlass() {
     if (!this._settings || !this._surface) return;
+
+    const blurEnabled = this._settings.get_boolean('blur-enabled');
+
+    if (!blurEnabled || !_NexusGlassEffect || !_glslHook) {
+      this._teardownGlass();
+      this._applyLegacyBlur(blurEnabled);
+      this._applyAppearance();
+      return;
+    }
+
+    if (!this._glassActive) {
+      if (!this._buildGlass()) {
+        this._applyLegacyBlur(true);
+        this._applyAppearance();
+        return;
+      }
+    } else {
+      this._applyBlurRadius(this._frostEffect);
+    }
+
+    this._applyAppearance();
+  }
+
+  _buildGlass() {
+    try {
+      const stage = global.stage;
+      const surfaceWidth = this._surface.width;
+      const surfaceHeight = this._surface.height;
+      if (!surfaceWidth || !surfaceHeight) {
+        return false;
+      }
+      const surfaceX = Math.round((stage.width - surfaceWidth) / 2);
+      const surfaceY = Math.round((stage.height - surfaceHeight) / 2);
+
+      // Live 1:1 copy of the desktop, positioned so it lines up with the real
+      // stage content behind the launcher.
+      this._desktopClone = new Clutter.Clone({
+        source: Main.uiGroup,
+        x: -surfaceX,
+        y: -surfaceY,
+        width: stage.width,
+        height: stage.height,
+      });
+
+      // Crops the clone to exactly the area the surface covers.
+      this._backdropView = new Clutter.Actor({
+        reactive: false,
+        clip_to_allocation: true,
+        x_align: Clutter.ActorAlign.CENTER,
+        y_align: Clutter.ActorAlign.CENTER,
+      });
+      this._backdropView.set_size(surfaceWidth, surfaceHeight);
+      this._backdropView.add_child(this._desktopClone);
+
+      const scaleFactor = St.ThemeContext.get_for_stage(stage).scale_factor;
+
+      this._glassEffect = new _NexusGlassEffect();
+      this._glassEffect.setUniform('tex', 1, [0]);
+      this._glassEffect.setUniform('uSize', 2, [surfaceWidth * scaleFactor, surfaceHeight * scaleFactor]);
+      this._glassEffect.setUniform('uRadius', 1, [30 * scaleFactor]);
+      this._glassEffect.setUniform('uMag', 1, [this._settings.get_double('magnification')]);
+      this._glassEffect.setUniform('uRefraction', 1, [0.35]);
+      this._backdropView.add_effect(this._glassEffect);
+
+      // Frost the refracted light, matching the configured blur strength.
+      this._frostEffect = new Shell.BlurEffect({
+        mode: _blurSupportsMode ? Shell.BlurMode.ACTOR : undefined,
+        brightness: 1.0,
+      });
+      this._applyBlurRadius(this._frostEffect);
+      this._backdropView.add_effect(this._frostEffect);
+
+      // The pane sits behind the surface so its content shows through the
+      // clear surface. Same size + centering => exact same rect.
+      this._actor.insert_child_at_index(this._backdropView, 1);
+      this._glassActive = true;
+      return true;
+    } catch (e) {
+      console.error(`[NexusLauncher] could not build the glass effect, using fallback: ${e}`);
+      this._teardownGlass();
+      return false;
+    }
+  }
+
+  _teardownGlass() {
+    if (this._backdropView) {
+      this._backdropView.destroy();
+      this._backdropView = null;
+    }
+    this._desktopClone = null;
+    this._glassEffect = null;
+    this._frostEffect = null;
+    this._glassActive = false;
+  }
+
+  _applyLegacyBlur(enabled) {
+    if (!enabled) {
+      if (this._legacyBlurEffect) {
+        this._surface?.remove_effect(this._legacyBlurEffect);
+        this._legacyBlurEffect = null;
+      }
+      return;
+    }
+
+    if (!this._legacyBlurEffect) {
+      try {
+        this._legacyBlurEffect = new Shell.BlurEffect({
+          mode: _blurSupportsMode ? Shell.BlurMode.BACKGROUND : undefined,
+          brightness: 1.0,
+        });
+        this._surface.add_effect(this._legacyBlurEffect);
+      } catch (e) {
+        console.error(`[NexusLauncher] could not create the blur effect: ${e}`);
+        this._legacyBlurEffect = null;
+        return;
+      }
+    }
+
+    this._applyBlurRadius(this._legacyBlurEffect);
+  }
+
+  _applyBlurRadius(effect) {
+    const scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
+    const radius = Math.max(1, Math.round(this._settings.get_double('blur-radius') * scaleFactor));
+    try {
+      if (_blurUsesRadius) {
+        effect.radius = radius;
+      } else if (_blurUsesSigma) {
+        effect.sigma = radius;
+      }
+    } catch (e) {
+      console.error(`[NexusLauncher] could not set the blur radius: ${e}`);
+    }
+  }
+
+  _applyOpacity() {
+    if (!this._settings || !this._actor) return;
     const opacity = this._settings.get_double('opacity');
-    // Apply this to the complete glass surface so changes are immediately
-    // visible, including the left identity panel and dock.
-    this._surface.opacity = Math.round(Math.max(0.2, Math.min(1, opacity)) * 255);
+    // Applied to the whole overlay so the dim backdrop, glass pane and content
+    // fade together.
+    this._actor.opacity = Math.round(Math.max(0.2, Math.min(1, opacity)) * 255);
+  }
+
+  _colorWithOpacity(colorKey, opacityKey) {
+    const colorString = this._settings.get_string(colorKey);
+    const alpha = this._settings.get_double(opacityKey);
+    const [r, g, b] = this._parseRgb(colorString);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
+  _parseRgb(colorString) {
+    const match = colorString.trim().match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+    if (match)
+      return [match[1], match[2], match[3]];
+
+    let hex = colorString.trim().replace(/^#/, '');
+    if (hex.length === 3)
+      hex = hex.split('').map(c => c + c).join('');
+    if (hex.length === 6)
+      return [
+        parseInt(hex.substring(0, 2), 16),
+        parseInt(hex.substring(2, 4), 16),
+        parseInt(hex.substring(4, 6), 16),
+      ];
+
+    return [0, 0, 0];
   }
 
   _onSearchChanged(query) {
@@ -293,9 +602,17 @@ export default class NexusOverlay {
       return Clutter.EVENT_STOP;
     }
     if (key === Clutter.KEY_Left || key === Clutter.KEY_Right) {
-      this._keyboardSection = 'dock';
-      this._dockBar?.moveSelection(key === Clutter.KEY_Left ? -1 : 1);
-      return Clutter.EVENT_STOP;
+      // While the caret can still move, keep the arrows for text editing and
+      // only fall back to dock navigation once the query is empty (or the
+      // search entry is not focused).
+      const typing = this._searchBar?.entry?.clutter_text?.has_key_focus()
+        && this._searchBar.getText().length > 0;
+      if (!typing) {
+        this._keyboardSection = 'dock';
+        this._dockBar?.moveSelection(key === Clutter.KEY_Left ? -1 : 1);
+        return Clutter.EVENT_STOP;
+      }
+      return Clutter.EVENT_PROPAGATE;
     }
     if (key === Clutter.KEY_Return || key === Clutter.KEY_KP_Enter) {
       if (this._keyboardSection === 'dock') {
@@ -355,5 +672,7 @@ export default class NexusOverlay {
     this._backdrop = null;
     this._surface = null;
     this._identityPanel = null;
+    this._legacyBlurEffect = null;
+    this._teardownGlass();
   }
 }

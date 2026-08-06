@@ -34,11 +34,6 @@ export default class SearchBar {
       this._entry.hint_text = this._settings.get_string('search-hint');
     });
   }
-
-  refreshHint() {
-    this._entry.hint_text = this._settings.get_string('search-hint');
-  }
-
   getText() {
     return this._entry.text || '';
   }

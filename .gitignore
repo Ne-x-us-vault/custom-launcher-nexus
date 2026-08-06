@@ -2,6 +2,10 @@
 nexus-launcher@Ne-x-us-vault.github.io/*.zip
 nexus-launcher@Ne-x-us-vault.github.io/schemas/gschemas.compiled
 
+# Packaging build output
+nexus-launcher@Ne-x-us-vault.github.io/packaging/dist/
+nexus-launcher@Ne-x-us-vault.github.io/packaging/root/
+
 # Local editor and operating-system files
 .vscode/
 .idea/

@@ -31,24 +31,46 @@ export default class DockBar {
     this._buttons = [];
     this._callbacks = [];
     this._selectedIndex = -1;
-    this._addActionButton('utilities-terminal-symbolic', 'Open Terminal', () => {
+    this._addActionButton('utilities-terminal-symbolic', () => {
       this._launchFirstAvailable([
-        // Fedora/GNOME's current terminal is Ptyxis. Keep the older IDs as
-        // fallbacks for other distributions.
+        // GNOME's terminal is Ptyxis on recent Fedora and Arch, Console on
+        // some distros, gnome-terminal (or kgx) elsewhere. Keep a broad list
+        // so the pill works on any Debian/Arch-based system.
         'org.gnome.Ptyxis.desktop',
         'org.gnome.Terminal.desktop',
         'org.gnome.Console.desktop',
         'kgx.desktop',
+        'com.raggesilver.BlackBox.desktop',
+        'org.wezfurlong.wezterm.desktop',
+        'tilix.desktop',
+        'com.gexperts.Tilix.desktop',
         'kitty.desktop',
+        'alacritty.desktop',
+        'org.xfce.Terminal.desktop',
+        'xfce4-terminal.desktop',
+        'konsole.desktop',
+        'org.kde.konsole.desktop',
+        'xterm.desktop',
       ]);
     });
-    this._addActionButton('folder-symbolic', 'Open Files', () => {
-      this._launchFirstAvailable(['org.gnome.Nautilus.desktop', 'nautilus.desktop']);
+    this._addActionButton('folder-symbolic', () => {
+      this._launchFirstAvailable([
+        'org.gnome.Nautilus.desktop',
+        'org.gnome.Files.desktop',
+        'nautilus.desktop',
+        'nemo.desktop',
+        'org.nemo.desktop',
+        'dolphin.desktop',
+        'org.kde.dolphin.desktop',
+        'org.xfce.thunar.desktop',
+        'thunar.desktop',
+        'pcmanfm.desktop',
+      ]);
     });
-    this._addActionButton(this._brandIcon('github.svg'), 'Open Ne-x-us-vault on GitHub', () => {
+    this._addActionButton(this._brandIcon('github.svg'), () => {
       this._launchUri(this._settings.get_string('github-url'));
     });
-    this._addActionButton(this._brandIcon('linkedin.svg'), 'Open Jaswa J R on LinkedIn', () => {
+    this._addActionButton(this._brandIcon('linkedin.svg'), () => {
       this._launchUri(this._settings.get_string('linkedin-url'));
     });
 
@@ -67,7 +89,7 @@ export default class DockBar {
     });
   }
 
-  _addActionButton(icon, tooltip, callback) {
+  _addActionButton(icon, callback) {
     const button = new St.Button({
       style_class: 'nexus-dock-btn nexus-quick-action',
       reactive: true,

@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+
+# Turn the extension off before the files are removed so a stale "error in
+# extension" bubble is not shown on the next login.
+if command -v gnome-extensions >/dev/null 2>&1; then
+    gnome-extensions disable custom-launcher@nexus.dev 2>/dev/null || true
+fi
+
+exit 0

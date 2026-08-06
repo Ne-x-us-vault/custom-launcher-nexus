@@ -31,10 +31,6 @@ export default class AppUtils {
     return caseSensitive ? query : query.toLowerCase();
   }
 
-  static matchesApp(appInfo, query, searchFields, caseSensitive) {
-    return AppUtils.getMatchScore(appInfo, query, searchFields, caseSensitive) !== null;
-  }
-
   static getMatchScore(appInfo, query, searchFields, caseSensitive) {
     if (!query) {
       return 0;

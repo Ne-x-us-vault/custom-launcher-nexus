@@ -1,0 +1,13 @@
+#!/bin/sh
+set -e
+
+# After dpkg removes our schema file, drop the stale compiled schemas entry.
+case "$1" in
+    purge|remove)
+        if command -v glib-compile-schemas >/dev/null 2>&1; then
+            glib-compile-schemas /usr/share/glib-2.0/schemas
+        fi
+        ;;
+esac
+
+exit 0
