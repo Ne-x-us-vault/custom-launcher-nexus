@@ -4,9 +4,8 @@ Section: utils
 Priority: optional
 Architecture: all
 Maintainer: Ne-x-us-vault <https://github.com/Ne-x-us-vault>
-Depends: gjs, gir1.2-gtk-4.0, gir1.2-adw-1
-Suggests: gnome-shell, rofi
-Description: Frost-glass application launcher for GNOME Shell and other desktops
- A keyboard-first, frost-glass application launcher. Ships a GNOME Shell
- extension (custom-launcher@nexus.dev), a standalone GTK4 launcher that runs
- on any desktop environment, and a matching Rofi theme.
+Depends: gnome-shell
+Description: Frost-glass application launcher for GNOME Shell
+ A keyboard-first, frost-glass application launcher for GNOME Shell.
+ Installs the custom-launcher@nexus.dev extension with search, quick
+ actions, and a customizable appearance.
