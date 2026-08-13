@@ -81,5 +81,10 @@
       <summary>LinkedIn link</summary>
       <description>URL opened by the LinkedIn quick-action pill.</description>
     </key>
+    <key name="web-search-url" type="s">
+      <default>""</default>
+      <summary>Web search URL</summary>
+      <description>URL template used by the web search result. The placeholder %s is replaced with the search query. Leave empty to use the search engine of the default web browser (Firefox, Chromium-based, or GNOME Web), falling back to DuckDuckGo.</description>
+    </key>
   </schema>
 </schemalist>

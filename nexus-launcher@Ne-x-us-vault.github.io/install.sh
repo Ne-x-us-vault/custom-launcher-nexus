@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 #
-# Nexus Launcher - Ubuntu/GNOME installer.
+# Nexus Launcher - cross-distro GNOME Shell installer.
 #
-# Installs the GNOME Shell extension (custom-launcher@nexus.dev).
+# Installs the GNOME Shell extension (custom-launcher@nexus.dev) on any
+# distro running GNOME Shell 45+, using the detected package manager
+# (apt-get, dnf, pacman, or zypper) when build tools are missing.
 # Run from the source directory.
 
 set -e
@@ -19,8 +21,9 @@ Options:
   --system   Install system-wide under /usr/share (needs sudo)
   --help     Show this help
 
-Installs missing runtime dependencies via apt, copies the extension, and
-enables it on GNOME Shell.
+Installs missing runtime dependencies (glib-compile-schemas) using the
+detected package manager, copies the extension, and enables it on GNOME
+Shell.
 EOF
 }
 
@@ -39,20 +42,66 @@ else
   PRIV=(sudo)
 fi
 
-install_deps() {
-  local missing=()
-  for tool in glib-compile-schemas zip; do
-    command -v "$tool" >/dev/null 2>&1 || missing+=("$tool")
+find_pkg_manager() {
+  for pm in apt-get dnf pacman zypper; do
+    command -v "$pm" >/dev/null 2>&1 && { echo "$pm"; return; }
   done
+  return 1
+}
+
+# Map a missing build tool to the package that ships it on each distro.
+# Installing by binary name fails on Arch (glib2) and Fedora/openSUSE
+# (glib2-devel), where glib-compile-schemas is not a package.
+pkg_for_tool() {
+  local tool="$1" pm="$2"
+  case "$pm" in
+    apt-get)  case "$tool" in glib-compile-schemas) echo "libglib2.0-bin";; *) echo "$tool";; esac ;;
+    dnf|zypper) case "$tool" in glib-compile-schemas) echo "glib2-devel";; *) echo "$tool";; esac ;;
+    pacman)   case "$tool" in glib-compile-schemas) echo "glib2";; *) echo "$tool";; esac ;;
+  esac
+}
+
+install_deps() {
+  # Only the schema compiler is needed by this installer; `zip` is only used
+  # by build.sh and is not a runtime requirement.
+  local missing=()
+  if ! command -v glib-compile-schemas >/dev/null 2>&1; then
+    missing+=("glib-compile-schemas")
+  fi
 
   if [[ ${#missing[@]} -eq 0 ]]; then
     echo "Required build tools are already installed."
     return
   fi
 
-  echo "Installing dependencies via apt..."
-  "${PRIV[@]}" apt-get update
-  "${PRIV[@]}" apt-get install -y "${missing[@]}"
+  local pm
+  if ! pm="$(find_pkg_manager)"; then
+    echo "No supported package manager found (apt/dnf/pacman/zypper)." >&2
+    echo "Please install ${missing[*]} manually, then rerun this installer." >&2
+    exit 1
+  fi
+
+  local packages=()
+  for tool in "${missing[@]}"; do
+    packages+=("$(pkg_for_tool "$tool" "$pm")")
+  done
+
+  echo "Installing ${packages[*]} via $pm..."
+  case "$pm" in
+    apt-get)
+      "${PRIV[@]}" apt-get update
+      "${PRIV[@]}" apt-get install -y "${packages[@]}"
+      ;;
+    dnf)
+      "${PRIV[@]}" dnf install -y "${packages[@]}"
+      ;;
+    pacman)
+      "${PRIV[@]}" pacman -S --needed --noconfirm "${packages[@]}"
+      ;;
+    zypper)
+      "${PRIV[@]}" zypper --non-interactive install "${packages[@]}"
+      ;;
+  esac
 }
 
 install_extension() {

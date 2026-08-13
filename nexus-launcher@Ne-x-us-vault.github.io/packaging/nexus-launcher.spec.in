@@ -1,0 +1,48 @@
+Name:           nexus-launcher
+Version:        @VERSION@
+Release:        1%{?dist}
+Summary:        Frost-glass application launcher for GNOME Shell
+
+License:        MIT
+URL:            https://github.com/Ne-x-us-vault
+Source0:        nexus-launcher-%{version}.tar.gz
+
+BuildArch:      noarch
+Requires:       gnome-shell
+
+%description
+A keyboard-first, frost-glass application launcher for GNOME Shell.
+Installs the custom-launcher@nexus.dev extension with search, quick
+actions, and a customizable appearance.
+
+%prep
+%setup -q -c -n nexus-launcher-%{version}
+
+%build
+# Nothing to compile; the schema is compiled in %post.
+
+%install
+rm -rf %{buildroot}
+EXT_DIR="%{buildroot}%{_datadir}/gnome-shell/extensions/custom-launcher@nexus.dev"
+SCHEMA_DIR="%{buildroot}%{_datadir}/glib-2.0/schemas"
+mkdir -p "$EXT_DIR" "$SCHEMA_DIR"
+cp -r extension.js prefs.js metadata.json stylesheet.css schemas lib assets "$EXT_DIR/"
+cp schemas/org.gnome.shell.extensions.nexus-launcher.gschema.xml "$SCHEMA_DIR/"
+
+%files
+%{_datadir}/gnome-shell/extensions/custom-launcher@nexus.dev
+%{_datadir}/glib-2.0/schemas/org.gnome.shell.extensions.nexus-launcher.gschema.xml
+
+%post
+# Compile the schema so GSettings can read the extension's settings.
+glib-compile-schemas %{_datadir}/glib-2.0/schemas
+# Note: the extension is not enabled here — %post runs as root with no GNOME
+# session. Enable it after login with:
+#   gnome-extensions enable custom-launcher@nexus.dev
+
+%postun
+glib-compile-schemas %{_datadir}/glib-2.0/schemas
+
+%changelog
+* Wed Aug 12 2026 Ne-x-us-vault <https://github.com/Ne-x-us-vault> - @VERSION@-1
+- Initial cross-distro RPM packaging.

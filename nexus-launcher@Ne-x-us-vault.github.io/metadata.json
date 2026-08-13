@@ -4,5 +4,6 @@
   "description": "A frost-glass application launcher with instant search, dock integration, and customizable blur, color, and opacity.",
   "shell-version": ["45", "46", "47", "48", "49", "50"],
   "settings-schema": "org.gnome.shell.extensions.nexus-launcher",
-  "url": ""
+  "url": "https://github.com/Ne-x-us-vault",
+  "version": "1.0.0"
 }

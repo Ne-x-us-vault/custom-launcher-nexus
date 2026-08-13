@@ -91,6 +91,10 @@ export default class NexusLauncherPreferences extends ExtensionPreferences {
     const controller = new Gtk.EventControllerKey();
     entry.add_controller(controller);
     controller.connect('key-pressed', (_, keyval, _keycode, state) => {
+      // Navigation/editing keys must not become the launcher hotkey.
+      if (keyval === Gdk.KEY_Escape || keyval === Gdk.KEY_BackSpace || keyval === Gdk.KEY_Delete)
+        return Gdk.EVENT_PROPAGATE;
+
       const accelerator = acceleratorName(keyval, state);
       if (!accelerator)
         return Gdk.EVENT_PROPAGATE;
@@ -232,10 +236,11 @@ export default class NexusLauncherPreferences extends ExtensionPreferences {
   _buildConnectivityGroup(settings) {
     const group = new Adw.PreferencesGroup({
       title: _('Connectivity'),
-      description: _('These links are opened by the GitHub and LinkedIn pills in the launcher.'),
+      description: _('Links opened by the GitHub and LinkedIn pills, and the URL template used by the web search result (leave empty to use the default browser’s search engine).'),
     });
     group.add(this._buildUrlRow(settings, 'github-url', _('GitHub link')));
     group.add(this._buildUrlRow(settings, 'linkedin-url', _('LinkedIn link')));
+    group.add(this._buildUrlRow(settings, 'web-search-url', _('Web search URL')));
     return group;
   }
 

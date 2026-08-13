@@ -150,6 +150,9 @@ export default class DockBar {
   _launchUri(uri) {
     try {
       Gio.AppInfo.launch_default_for_uri(uri, null);
+      // Bring the browser to the foreground so the opened link is visible.
+      const browser = Gio.AppInfo.get_default_for_uri_scheme('https');
+      AppUtils.focusAppAfterLaunch(browser?.get_id());
       // This mirrors launching an app: open the target, then dismiss Nexus.
       this._onLaunch(null);
     } catch (error) {

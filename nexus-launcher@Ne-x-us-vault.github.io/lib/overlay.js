@@ -133,7 +133,7 @@ export default class NexusOverlay {
     this._glassEffect = null;
     this._frostEffect = null;
     this._glassActive = false;
-    this._universalSearch = new UniversalSearch();
+    this._universalSearch = new UniversalSearch(this._settings);
   }
 
   open() {
@@ -263,10 +263,14 @@ export default class NexusOverlay {
     this._surface = new St.BoxLayout({
       style_class: 'nexus-launcher-surface',
       vertical: false,
-      x_align: Clutter.ActorAlign.CENTER,
-      y_align: Clutter.ActorAlign.CENTER,
+      x_align: Clutter.ActorAlign.START,
+      y_align: Clutter.ActorAlign.START,
     });
     this._surface.set_size(1008, 600);
+    // Center on the monitor under the pointer, not on the whole stage,
+    // which on multi-monitor Wayland sessions spans every display.
+    const surfacePos = this._centeredOnMonitor(1008, 600);
+    this._surface.set_position(surfacePos.x, surfacePos.y);
 
     this._identityPanel = new St.BoxLayout({
       style_class: 'nexus-left-card',
@@ -408,8 +412,16 @@ export default class NexusOverlay {
       if (!surfaceWidth || !surfaceHeight) {
         return false;
       }
-      const surfaceX = Math.round((stage.width - surfaceWidth) / 2);
-      const surfaceY = Math.round((stage.height - surfaceHeight) / 2);
+
+      // Bound the effect to the monitor the launcher opens on.
+      const monitorIndex = global.display.get_current_monitor();
+      const monitorGeometry = global.display.get_monitor_geometry(monitorIndex);
+      const monitorW = monitorGeometry.width;
+      const monitorH = monitorGeometry.height;
+      const surfacePos = this._centeredOnMonitor(surfaceWidth, surfaceHeight);
+      const surfaceX = surfacePos.x;
+      const surfaceY = surfacePos.y;
+      this._surface.set_position(surfaceX, surfaceY);
 
       // Live 1:1 copy of the desktop, positioned so it lines up with the real
       // stage content behind the launcher.
@@ -417,18 +429,19 @@ export default class NexusOverlay {
         source: Main.uiGroup,
         x: -surfaceX,
         y: -surfaceY,
-        width: stage.width,
-        height: stage.height,
+        width: monitorW,
+        height: monitorH,
       });
 
       // Crops the clone to exactly the area the surface covers.
       this._backdropView = new Clutter.Actor({
         reactive: false,
         clip_to_allocation: true,
-        x_align: Clutter.ActorAlign.CENTER,
-        y_align: Clutter.ActorAlign.CENTER,
+        x_align: Clutter.ActorAlign.START,
+        y_align: Clutter.ActorAlign.START,
       });
       this._backdropView.set_size(surfaceWidth, surfaceHeight);
+      this._backdropView.set_position(surfaceX, surfaceY);
       this._backdropView.add_child(this._desktopClone);
 
       const scaleFactor = St.ThemeContext.get_for_stage(stage).scale_factor;
@@ -510,6 +523,15 @@ export default class NexusOverlay {
     } catch (e) {
       console.error(`[NexusLauncher] could not set the blur radius: ${e}`);
     }
+  }
+
+  _centeredOnMonitor(width, height) {
+    const monitorIndex = global.display.get_current_monitor();
+    const monitorGeometry = global.display.get_monitor_geometry(monitorIndex);
+    return {
+      x: Math.round(monitorGeometry.x + (monitorGeometry.width - width) / 2),
+      y: Math.round(monitorGeometry.y + (monitorGeometry.height - height) / 2),
+    };
   }
 
   _applyOpacity() {

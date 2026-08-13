@@ -18,7 +18,9 @@ leaving your current task.
 - Keyboard-first controls: `Super + Enter`, arrows, `Tab`, `Enter`, and `Escape`
 - Four quick-action pills: Terminal, Files, GitHub, and LinkedIn
 - Pinnable dock apps
-- Native GNOME search-provider results plus a built-in web-search fallback
+- Native GNOME search-provider results (respecting your enabled-providers preferences) plus a web-search result that uses your default browser's search engine, with a custom URL option
+- Launched apps and opened links are raised to the foreground
+- Opens centered on the monitor under the pointer (multi-monitor friendly)
 - Customizable appearance: colors, opacities, blur radius, magnification, and overlay opacity
 
 ## Preview
@@ -29,18 +31,34 @@ leaving your current task.
 
 ## Requirements
 
-- Ubuntu with GNOME Shell 45–50
+- Any distro running GNOME Shell 45–50 (Debian, Ubuntu, Fedora, Arch,
+  openSUSE, and derivatives). GNOME 44 and older are not supported.
 
 ## Installation
 
-### Option 1 — One-liner
+### Option 1 — Install script
+
+Download the script to a file and review it before running (avoid piping
+remote code straight into your shell):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Ne-x-us-vault/custom-launcher-nexus/main/install.sh | bash
+curl -fsSL -o install.sh https://raw.githubusercontent.com/Ne-x-us-vault/custom-launcher-nexus/main/install.sh
+less install.sh
+bash install.sh
 ```
 
-Installs missing dependencies via apt, then installs the extension. For a
+Installs missing dependencies (glib-compile-schemas) using the detected
+package manager (apt/dnf/pacman/zypper), then installs the extension. For a
 system-wide install append `--system`.
+
+> Prefer the native package for your distro (Options 2–4): they are built
+> from the same sources and give you clean removal with your package manager.
+> Package scripts cannot reach your GNOME session, so enable the extension
+> once after login:
+>
+> ```bash
+> gnome-extensions enable custom-launcher@nexus.dev
+> ```
 
 ### Option 2 — Debian / Ubuntu package
 
@@ -52,7 +70,31 @@ sudo apt install ./dist/nexus-launcher_1.0.0_all.deb
 
 Remove with `sudo dpkg -r nexus-launcher`.
 
-### Option 3 — From source
+### Option 3 — Fedora / RHEL / openSUSE RPM
+
+Needs `rpmbuild` (`sudo dnf install rpm-build`).
+
+```bash
+cd custom-launcher-nexus/nexus-launcher@Ne-x-us-vault.github.io/packaging
+./build-rpm.sh 1.0.0
+sudo dnf install ./dist/nexus-launcher-1.0.0-1.*.rpm
+```
+
+Remove with `sudo dnf remove nexus-launcher` (or `sudo zypper rm nexus-launcher`).
+
+### Option 4 — Arch Linux package
+
+Needs `makepkg` (Arch / Manjaro / EndeavourOS).
+
+```bash
+cd custom-launcher-nexus/nexus-launcher@Ne-x-us-vault.github.io/packaging
+./build-arch.sh 1.0.0
+sudo pacman -U ./dist/nexus-launcher-1.0.0-1-any.pkg.tar.zst
+```
+
+Remove with `sudo pacman -R nexus-launcher`.
+
+### Option 5 — From source
 
 ```bash
 cd custom-launcher-nexus/nexus-launcher@Ne-x-us-vault.github.io
@@ -107,6 +149,7 @@ gnome-extensions prefs custom-launcher@nexus.dev
 | Overlay opacity | float | `1.0` | Overall opacity of the entire overlay |
 | GitHub link | url | `https://github.com/Ne-x-us-vault` | GitHub pill destination |
 | LinkedIn link | url | `https://www.linkedin.com/in/jaswa-j-r/` | LinkedIn pill destination |
+| Web search URL | url | auto | URL template for the web search result (`%s` = query). Leave empty to use the default browser's search engine |
 
 The preferences panel also includes a **Reset to defaults** button that
 restores every key and rebuilds the page.

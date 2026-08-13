@@ -6,8 +6,9 @@ set -euo pipefail
 #   curl -fsSL https://raw.githubusercontent.com/Ne-x-us-vault/custom-launcher-nexus/main/install.sh | bash
 #
 # Downloads the current main branch, then runs the bundled installer, which
-# installs the GNOME Shell extension (custom-launcher@nexus.dev) for
-# Ubuntu/GNOME. Pass-through flags are forwarded, e.g. | bash -s -- --system
+# installs the GNOME Shell extension (custom-launcher@nexus.dev) on any
+# distro running GNOME Shell, using the detected package manager when build
+# tools are missing. Pass-through flags are forwarded, e.g. | bash -s -- --system
 
 REPO="Ne-x-us-vault/custom-launcher-nexus"
 BRANCH="${NEXUS_BRANCH:-main}"

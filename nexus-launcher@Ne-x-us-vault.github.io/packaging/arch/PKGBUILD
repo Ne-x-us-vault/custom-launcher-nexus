@@ -1,0 +1,18 @@
+pkgname=nexus-launcher
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Frost-glass application launcher for GNOME Shell"
+arch=('any')
+url="https://github.com/Ne-x-us-vault"
+license=('MIT')
+depends=('gnome-shell')
+source=("$pkgname-$pkgver.tar.gz")
+md5sums=('SKIP')
+
+package() {
+  local ext="$pkgdir/usr/share/gnome-shell/extensions/custom-launcher@nexus.dev"
+  local schema="$pkgdir/usr/share/glib-2.0/schemas"
+  install -d "$ext" "$schema"
+  cp -r extension.js prefs.js metadata.json stylesheet.css schemas lib assets "$ext/"
+  cp schemas/org.gnome.shell.extensions.nexus-launcher.gschema.xml "$schema/"
+}
