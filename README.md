@@ -18,16 +18,14 @@ leaving your current task.
 - Keyboard-first controls: `Super + Enter`, arrows, `Tab`, `Enter`, and `Escape`
 - Five quick-action pills: Terminal, Files, GitHub, LinkedIn, and Mail
 - Pinnable dock apps
-- Native GNOME search-provider results (respecting your enabled-providers preferences) plus a web-search result that uses your default browser's search engine, with a custom URL option
+- Native GNOME search-provider results (respecting your enabled-providers preferences) plus a web-search result that uses your default browser's search engine
 - Launched apps and opened links are raised to the foreground
 - Opens centered on the monitor under the pointer (multi-monitor friendly)
 - Customizable appearance: colors, opacities, blur radius, magnification, and overlay opacity
 
 ## Preview
 
-![Nexus Launcher overlay](nexus-launcher@Ne-x-us-vault.github.io/assets/screenshots/Screenshot%20From%202026-08-03%2002-27-40.png)
-
-![Nexus Launcher preferences](nexus-launcher@Ne-x-us-vault.github.io/assets/screenshots/Screenshot%20From%202026-08-03%2002-28-12.png)
+![Nexus Launcher overlay](nexus-launcher@Ne-x-us-vault.github.io/assets/screenshots/Screenshot%20From%202026-08-15%2023-24-45.png)
 
 ## Requirements
 
@@ -150,7 +148,6 @@ gnome-extensions prefs custom-launcher@nexus.dev
 | GitHub link | url | `https://github.com/Ne-x-us-vault` | GitHub pill destination |
 | LinkedIn link | url | `https://www.linkedin.com/in/jaswa-j-r/` | LinkedIn pill destination |
 | Mail link | url | `https://mail.google.com` | Mail pill destination |
-| Web search URL | url | auto | URL template for the web search result (`%s` = query). Leave empty to use the default browser's search engine |
 
 The preferences panel also includes a **Reset to defaults** button that
 restores every key and rebuilds the page.
