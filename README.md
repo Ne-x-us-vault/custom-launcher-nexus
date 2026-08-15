@@ -16,7 +16,7 @@ leaving your current task.
 - Click-outside or `Escape` to close
 - Fast installed-app search, ranked by name, description, executable, and desktop keywords
 - Keyboard-first controls: `Super + Enter`, arrows, `Tab`, `Enter`, and `Escape`
-- Four quick-action pills: Terminal, Files, GitHub, and LinkedIn
+- Five quick-action pills: Terminal, Files, GitHub, LinkedIn, and Mail
 - Pinnable dock apps
 - Native GNOME search-provider results (respecting your enabled-providers preferences) plus a web-search result that uses your default browser's search engine, with a custom URL option
 - Launched apps and opened links are raised to the foreground
@@ -149,6 +149,7 @@ gnome-extensions prefs custom-launcher@nexus.dev
 | Overlay opacity | float | `1.0` | Overall opacity of the entire overlay |
 | GitHub link | url | `https://github.com/Ne-x-us-vault` | GitHub pill destination |
 | LinkedIn link | url | `https://www.linkedin.com/in/jaswa-j-r/` | LinkedIn pill destination |
+| Mail link | url | `https://mail.google.com` | Mail pill destination |
 | Web search URL | url | auto | URL template for the web search result (`%s` = query). Leave empty to use the default browser's search engine |
 
 The preferences panel also includes a **Reset to defaults** button that

@@ -213,15 +213,7 @@ export default class UniversalSearch {
 
   _createWebResult(query) {
     const q = encodeURIComponent(query);
-    const template = (this._settings?.get_string('web-search-url') || '').trim();
-    let url;
-    if (template) {
-      url = template.includes('%s')
-        ? template.replace(/%s/g, q)
-        : `${template}${template.includes('?') ? '&' : '?'}q=${q}`;
-    } else {
-      url = this._detectedEngineUrl().replace(/%s/g, q);
-    }
+    const url = this._detectedEngineUrl().replace(/%s/g, q);
     return {
       type: 'provider',
       id: `web:${query}`,

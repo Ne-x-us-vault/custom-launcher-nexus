@@ -18,6 +18,7 @@ export default class DockBar {
       this._settings.connect('changed::dock-apps', () => this.refresh()),
       this._settings.connect('changed::github-url', () => this.refresh()),
       this._settings.connect('changed::linkedin-url', () => this.refresh()),
+      this._settings.connect('changed::mail-url', () => this.refresh()),
     ];
     this.refresh();
   }
@@ -72,6 +73,9 @@ export default class DockBar {
     });
     this._addActionButton(this._brandIcon('linkedin.svg'), () => {
       this._launchUri(this._settings.get_string('linkedin-url'));
+    });
+    this._addActionButton(this._brandIcon('mail.svg'), () => {
+      this._launchUri(this._settings.get_string('mail-url'));
     });
 
     const pinnedApps = this._settings.get_strv('dock-apps');

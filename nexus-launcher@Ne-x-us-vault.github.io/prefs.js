@@ -236,11 +236,11 @@ export default class NexusLauncherPreferences extends ExtensionPreferences {
   _buildConnectivityGroup(settings) {
     const group = new Adw.PreferencesGroup({
       title: _('Connectivity'),
-      description: _('Links opened by the GitHub and LinkedIn pills, and the URL template used by the web search result (leave empty to use the default browser’s search engine).'),
+      description: _('Links opened by the GitHub, LinkedIn, and Mail pills. Web search uses the default browser’s search engine.'),
     });
     group.add(this._buildUrlRow(settings, 'github-url', _('GitHub link')));
     group.add(this._buildUrlRow(settings, 'linkedin-url', _('LinkedIn link')));
-    group.add(this._buildUrlRow(settings, 'web-search-url', _('Web search URL')));
+    group.add(this._buildUrlRow(settings, 'mail-url', _('Mail link')));
     return group;
   }
 
