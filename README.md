@@ -156,6 +156,7 @@ restores every key and rebuilds the page.
 
 - **Shortcut does nothing:** run `gnome-extensions info custom-launcher@nexus.dev`; log out/in on Wayland if it is inactive.
 - **Extension became inactive after an update:** GNOME Shell needs a reload; log out/in on Wayland.
+- **Universal search or settings broke after an update:** the shell keeps the old extension code in memory until you log out and back in; a `gnome-extensions disable/enable` cycle does not reload it. Log out/in to pick up the updated files.
 - **Need diagnostics:** run `journalctl --user -f -o cat`, then open Nexus and look for `NexusLauncher` errors.
 
 ## License
