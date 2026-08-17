@@ -1,0 +1,63 @@
+/* Nexus Launcher – Extension Preferences Styling */
+
+/* ─── Hotkey Button ─────────────────────────────────────────────────── */
+
+.nexus-hotkey-btn {
+  min-width: 180px;
+  min-height: 36px;
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  border: 1px solid alpha(@borders, 0.6);
+  background-color: alpha(@window_bg_color, 0.5);
+  padding: 0 14px;
+  transition: all 150ms ease-out;
+}
+
+.nexus-hotkey-btn:hover {
+  border-color: alpha(@accent_bg_color, 0.5);
+  background-color: alpha(@accent_bg_color, 0.08);
+}
+
+.nexus-hotkey-btn:focus {
+  border-color: @accent_bg_color;
+  box-shadow: 0 0 0 2px alpha(@accent_bg_color, 0.2);
+  background-color: alpha(@accent_bg_color, 0.12);
+}
+
+/* ─── Monospace value labels beside sliders ─────────────────────────── */
+
+.nexus-hotkey-btn label {
+  font-family: monospace;
+  font-weight: 600;
+}
+
+/* ─── About Row ─────────────────────────────────────────────────────── */
+
+.nexus-about-row {
+  padding: 8px 12px;
+}
+
+.nexus-about-title {
+  letter-spacing: -0.2px;
+}
+
+/* ─── Slider value labels (monospace class applied in JS) ───────────── */
+
+label.monospace {
+  font-family: monospace;
+  font-weight: 600;
+  min-width: 40px;
+}
+
+/* ─── URL Entry styling ─────────────────────────────────────────────── */
+
+entry GtkImage.primary-icon {
+  color: alpha(@window_fg_color, 0.45);
+}
+
+/* ─── Smooth transitions for row hover states ───────────────────────── */
+
+row {
+  transition: background-color 120ms ease-out;
+}

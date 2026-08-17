@@ -3,5 +3,5 @@ set -e
 cd "$(dirname "$0")"
 glib-compile-schemas schemas/
 zip -r custom-launcher@nexus.dev.zip \
-  extension.js prefs.js metadata.json stylesheet.css \
+  extension.js prefs.js prefs.css metadata.json stylesheet.css \
   schemas lib assets install.sh -x "*.git*"
