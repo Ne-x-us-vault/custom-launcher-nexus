@@ -5,9 +5,9 @@ import Pango from 'gi://Pango';
 import AppUtils from './appUtils.js';
 
 const CARD_SIZES = {
-  small: { width: 420, height: 400 },
-  medium: { width: 446, height: 480 },
-  large: { width: 500, height: 520 },
+  small: { width: 380, height: 380 },
+  medium: { width: 420, height: 460 },
+  large: { width: 480, height: 520 },
 };
 
 const ROW_SCROLL_STEP = 76;
@@ -49,8 +49,9 @@ export default class AppList {
   _updateSize() {
     const sizeKey = this._settings.get_string('card-size');
     const size = CARD_SIZES[sizeKey] || CARD_SIZES.medium;
-    this.actor.set_width(size.width);
-    this.actor.set_height(size.height);
+    const scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
+    this.actor.set_width(Math.round(size.width * scaleFactor));
+    this.actor.set_height(Math.round(size.height * scaleFactor));
   }
 
   filter(query) {

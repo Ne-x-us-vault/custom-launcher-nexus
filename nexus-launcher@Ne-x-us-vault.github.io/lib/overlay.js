@@ -109,8 +109,8 @@ const _NexusGlassEffect = Shell.GLSLEffect
   : null;
 
 export default class NexusOverlay {
-  static SURFACE_BASE_WIDTH = 1008;
-  static SURFACE_BASE_HEIGHT = 600;
+  static SURFACE_BASE_WIDTH = 1020;
+  static SURFACE_BASE_HEIGHT = 620;
 
   constructor(settings) {
     this._settings = settings;
@@ -333,6 +333,12 @@ export default class NexusOverlay {
     );
 
     this._card.add_child(this._appList.actor);
+
+    // Spacer to push the dock bar to the bottom of the left panel.
+    this._identityPanel.add_child(new St.Widget({
+      style_class: 'nexus-dock-spacer',
+      y_expand: true,
+    }));
     this._identityPanel.add_child(this._dockBar.actor);
 
     this._surface.add_child(this._identityPanel);
