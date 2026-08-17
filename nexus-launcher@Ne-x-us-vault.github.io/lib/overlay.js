@@ -109,6 +109,9 @@ const _NexusGlassEffect = Shell.GLSLEffect
   : null;
 
 export default class NexusOverlay {
+  static SURFACE_BASE_WIDTH = 1008;
+  static SURFACE_BASE_HEIGHT = 600;
+
   constructor(settings) {
     this._settings = settings;
     this.visible = false;
@@ -133,6 +136,7 @@ export default class NexusOverlay {
     this._glassEffect = null;
     this._frostEffect = null;
     this._glassActive = false;
+    this._monitorChangedId = null;
     this._universalSearch = new UniversalSearch(this._settings);
   }
 
@@ -149,6 +153,14 @@ export default class NexusOverlay {
       global.stage.add_child(this._actor);
 
       this.visible = true;
+
+      // Close the overlay when the monitor layout changes (hot-plug,
+      // resolution change) so it recenters correctly on next open.
+      if (this._monitorChangedId === null) {
+        this._monitorChangedId = global.display.connect('workareas-changed', () => {
+          this.close();
+        });
+      }
 
       // Do not use Main.pushModal(): its keyboard grab prevents our global
       // keybinding from firing a second time to close the launcher. The actor
@@ -214,6 +226,10 @@ export default class NexusOverlay {
       this._actor.disconnect(this._scrollEventId);
       this._scrollEventId = null;
     }
+    if (this._monitorChangedId !== null) {
+      global.display.disconnect(this._monitorChangedId);
+      this._monitorChangedId = null;
+    }
 
     this._disconnectSignals();
 
@@ -266,10 +282,13 @@ export default class NexusOverlay {
       x_align: Clutter.ActorAlign.START,
       y_align: Clutter.ActorAlign.START,
     });
-    this._surface.set_size(1008, 600);
+    const scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
+    const surfaceWidth = Math.round(NexusOverlay.SURFACE_BASE_WIDTH * scaleFactor);
+    const surfaceHeight = Math.round(NexusOverlay.SURFACE_BASE_HEIGHT * scaleFactor);
+    this._surface.set_size(surfaceWidth, surfaceHeight);
     // Center on the monitor under the pointer, not on the whole stage,
     // which on multi-monitor Wayland sessions spans every display.
-    const surfacePos = this._centeredOnMonitor(1008, 600);
+    const surfacePos = this._centeredOnMonitor(surfaceWidth, surfaceHeight);
     this._surface.set_position(surfacePos.x, surfacePos.y);
 
     this._identityPanel = new St.BoxLayout({

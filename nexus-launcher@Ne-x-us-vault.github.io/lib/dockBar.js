@@ -152,6 +152,11 @@ export default class DockBar {
   }
 
   _launchUri(uri) {
+    if (!uri || !uri.trim()) {
+      console.log('[NexusLauncher] URI is empty, skipping launch');
+      this._onLaunch(null);
+      return;
+    }
     try {
       Gio.AppInfo.launch_default_for_uri(uri, null);
       // Bring the browser to the foreground so the opened link is visible.

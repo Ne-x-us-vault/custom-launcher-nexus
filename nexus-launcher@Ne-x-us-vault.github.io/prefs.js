@@ -80,8 +80,19 @@ export default class NexusLauncherPreferences extends ExtensionPreferences {
       description: _('Choose the shortcut that toggles Nexus Launcher.'),
     });
     const row = new Adw.ActionRow({ title: _('Toggle launcher') });
+    const hotkeyDisplay = (strv) => {
+      const raw = strv.join(', ');
+      return raw
+        .replace(/<Super>/g, 'Super + ')
+        .replace(/<Shift>/g, 'Shift + ')
+        .replace(/<Control>/g, 'Ctrl + ')
+        .replace(/<Alt>/g, 'Alt + ')
+        .replace(/<Primary>/g, 'Ctrl + ')
+        .replace(/Return/g, 'Enter')
+        .replace(/KP_Enter/g, 'Numpad Enter');
+    };
     const entry = new Gtk.Entry({
-      text: settings.get_strv('hotkey').join(', '),
+      text: hotkeyDisplay(settings.get_strv('hotkey')),
       editable: false,
       can_focus: true,
       hexpand: true,
@@ -100,7 +111,7 @@ export default class NexusLauncherPreferences extends ExtensionPreferences {
         return Gdk.EVENT_PROPAGATE;
 
       settings.set_strv('hotkey', [accelerator]);
-      entry.text = accelerator;
+      entry.text = hotkeyDisplay([accelerator]);
       return Gdk.EVENT_STOP;
     });
 
@@ -189,7 +200,7 @@ export default class NexusLauncherPreferences extends ExtensionPreferences {
         step_increment: 0.01,
         value: settings.get_double('opacity'),
       }),
-      digits: 0,
+      digits: 2,
       draw_value: false,
       hexpand: true,
       width_request: 220,
@@ -250,7 +261,7 @@ export default class NexusLauncherPreferences extends ExtensionPreferences {
       text: settings.get_string(key),
       hexpand: true,
       width_request: 300,
-      placeholder_text: 'https://',
+      placeholder_text: _('https://'),
     });
     entry.connect('changed', () => settings.set_string(key, entry.text.trim()));
     row.add_suffix(entry);

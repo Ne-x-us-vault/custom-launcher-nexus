@@ -27,7 +27,7 @@ export default class AppUtils {
       // is visible instead of being lost behind other windows.
       AppUtils.focusAppAfterLaunch(appInfo.get_id());
     } catch (e) {
-      log(`NexusLauncher: failed to launch ${appInfo.get_id()}: ${e}`);
+      console.error(`NexusLauncher: failed to launch ${appInfo.get_id()}: ${e}`);
     }
   }
 
@@ -55,7 +55,7 @@ export default class AppUtils {
           }
         }
       } catch (error) {
-        log(`NexusLauncher: could not focus ${targetId}: ${error}`);
+        console.error(`NexusLauncher: could not focus ${targetId}: ${error}`);
       }
       return GLib.SOURCE_REMOVE;
     });

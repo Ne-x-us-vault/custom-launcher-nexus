@@ -13,7 +13,7 @@ export default class SearchBar {
   _build() {
     this.actor = new St.BoxLayout({ style_class: 'nexus-search-widget', vertical: false, x_expand: true, y_expand: false });
     this._searchIcon = new St.Icon({
-      icon_name: 'go-next-symbolic',
+      icon_name: 'edit-find-symbolic',
       icon_size: 18,
       y_align: Clutter.ActorAlign.CENTER,
       style_class: 'nexus-search-icon',

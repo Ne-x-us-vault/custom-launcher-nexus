@@ -15,4 +15,5 @@ package() {
   install -d "$ext" "$schema"
   cp -r extension.js prefs.js metadata.json stylesheet.css schemas lib assets "$ext/"
   cp schemas/org.gnome.shell.extensions.nexus-launcher.gschema.xml "$schema/"
+  glib-compile-schemas "$schema"
 }

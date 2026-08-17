@@ -154,7 +154,7 @@ export default class UniversalSearch {
     const providerResults = await Promise.all(this._providers.map(provider =>
       this._searchProvider(provider, terms).catch(() => [])
     ));
-    return [...providerResults.flat(), ...results];
+    return [...providerResults.flat().sort((a, b) => (a.name || '').localeCompare(b.name || '')), ...results];
   }
 
   async _searchProvider(provider, terms) {
@@ -228,7 +228,7 @@ export default class UniversalSearch {
           const browser = Gio.AppInfo.get_default_for_uri_scheme('https');
           AppUtils.focusAppAfterLaunch(browser?.get_id());
         } catch (e) {
-          log(`[NexusLauncher] could not focus browser: ${e}`);
+          console.error(`[NexusLauncher] could not focus browser: ${e}`);
         }
       },
     };

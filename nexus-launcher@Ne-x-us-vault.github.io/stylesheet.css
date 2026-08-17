@@ -85,20 +85,20 @@
   min-width: 7px;
 }
 
-.nexus-app-list-scrollview StScrollBar StBin#trough {
+.nexus-app-list-scrollview StScrollBar StBin {
   background-color: rgba(232, 241, 246, 0.07);
   border-radius: 999px;
   min-width: 3px;
 }
 
-.nexus-app-list-scrollview StScrollBar StButton#vhandle {
+.nexus-app-list-scrollview StScrollBar StButton {
   background-color: rgba(232, 241, 246, 0.38);
   border-radius: 999px;
   min-width: 5px;
   min-height: 46px;
 }
 
-.nexus-app-list-scrollview StScrollBar StButton#vhandle:hover {
+.nexus-app-list-scrollview StScrollBar StButton:hover {
   background-color: rgba(232, 241, 246, 0.58);
 }
 
@@ -161,8 +161,5 @@
 
 .nexus-quick-action {
   border: 1px solid rgba(231, 241, 245, 0.16);
-  /* Five quick actions fit cleanly in the left panel without wrapping. */
-  min-width: 62px;
-  min-height: 44px;
   margin-right: 8px;
 }
