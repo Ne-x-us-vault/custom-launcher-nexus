@@ -5,9 +5,9 @@ import Pango from 'gi://Pango';
 import AppUtils from './appUtils.js';
 
 const CARD_SIZES = {
-  small: { width: 422, height: 392 },
-  medium: { width: 452, height: 456 },
-  large: { width: 502, height: 500 },
+  small: { width: 422, height: 404 },
+  medium: { width: 452, height: 468 },
+  large: { width: 502, height: 512 },
 };
 
 const ROW_SCROLL_STEP = 76;
