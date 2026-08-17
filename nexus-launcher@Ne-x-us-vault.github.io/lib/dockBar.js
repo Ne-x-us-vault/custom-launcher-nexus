@@ -24,7 +24,13 @@ export default class DockBar {
   }
 
   _build() {
-    return new St.BoxLayout({ style_class: 'nexus-dock-strip', vertical: false, x_expand: true, y_expand: false, reactive: false });
+    return new St.BoxLayout({
+      style_class: 'nexus-dock-strip',
+      vertical: false,
+      x_expand: false,
+      y_expand: false,
+      reactive: false,
+    });
   }
 
   refresh() {
@@ -88,7 +94,7 @@ export default class DockBar {
 
       const icon = appInfo.get_icon() || new Gio.ThemedIcon({ name: 'application-x-executable' });
       const button = new St.Button({ style_class: 'nexus-dock-btn', reactive: true, can_focus: true });
-      button.set_child(new St.Icon({ gicon: icon, icon_size: 24 }));
+      button.set_child(new St.Icon({ gicon: icon, icon_size: 22 }));
       this._addButton(button, () => this._onLaunch(appInfo));
     });
   }
@@ -100,8 +106,8 @@ export default class DockBar {
       can_focus: true,
     });
     const iconProperties = typeof icon === 'string'
-      ? {icon_name: icon, icon_size: 20}
-      : {gicon: icon, icon_size: 20};
+      ? {icon_name: icon, icon_size: 18}
+      : {gicon: icon, icon_size: 18};
     button.set_child(new St.Icon(iconProperties));
     this._addButton(button, callback);
   }

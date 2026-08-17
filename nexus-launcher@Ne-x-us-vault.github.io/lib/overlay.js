@@ -109,8 +109,9 @@ const _NexusGlassEffect = Shell.GLSLEffect
   : null;
 
 export default class NexusOverlay {
-  static SURFACE_BASE_WIDTH = 1020;
-  static SURFACE_BASE_HEIGHT = 620;
+  static SURFACE_BASE_WIDTH = 972;
+  static SURFACE_BASE_HEIGHT = 568;
+  static IDENTITY_PANEL_WIDTH = 408;
 
   constructor(settings) {
     this._settings = settings;
@@ -294,9 +295,10 @@ export default class NexusOverlay {
     this._identityPanel = new St.BoxLayout({
       style_class: 'nexus-left-card',
       vertical: true,
-      x_expand: true,
+      x_expand: false,
       y_expand: true,
     });
+    this._identityPanel.set_width(Math.round(NexusOverlay.IDENTITY_PANEL_WIDTH * scaleFactor));
 
     this._searchBar = new SearchBar(this._settings, (query) => this._onSearchChanged(query));
     this._identityPanel.add_child(this._searchBar.actor);
@@ -314,14 +316,18 @@ export default class NexusOverlay {
       text: 'Instant search\nKeyboard-first\nPinned workspace',
       style_class: 'nexus-status-copy',
     }));
-    this._identityPanel.add_child(new St.Widget({ x_expand: true, y_expand: true }));
+    this._identityPanel.add_child(new St.Widget({
+      style_class: 'nexus-dock-spacer',
+      x_expand: true,
+      y_expand: true,
+    }));
 
     // Application card
     this._card = new St.BoxLayout({
       style_class: 'nexus-right-card',
       vertical: true,
       reactive: true,
-      y_expand: true,
+      y_expand: false,
       x_align: Clutter.ActorAlign.CENTER,
       y_align: Clutter.ActorAlign.CENTER,
     });
@@ -333,12 +339,6 @@ export default class NexusOverlay {
     );
 
     this._card.add_child(this._appList.actor);
-
-    // Spacer to push the dock bar to the bottom of the left panel.
-    this._identityPanel.add_child(new St.Widget({
-      style_class: 'nexus-dock-spacer',
-      y_expand: true,
-    }));
     this._identityPanel.add_child(this._dockBar.actor);
 
     this._surface.add_child(this._identityPanel);

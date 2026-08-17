@@ -5,9 +5,9 @@ import Pango from 'gi://Pango';
 import AppUtils from './appUtils.js';
 
 const CARD_SIZES = {
-  small: { width: 380, height: 380 },
-  medium: { width: 420, height: 460 },
-  large: { width: 480, height: 520 },
+  small: { width: 422, height: 392 },
+  medium: { width: 452, height: 456 },
+  large: { width: 502, height: 500 },
 };
 
 const ROW_SCROLL_STEP = 76;
@@ -90,7 +90,12 @@ export default class AppList {
       });
 
       const content = new St.BoxLayout({ style_class: 'nexus-app-row-content', vertical: false, x_expand: true, y_expand: false });
-      content.add_child(new St.Icon({ gicon, icon_size: 38, style_class: 'nexus-app-icon' }));
+      content.add_child(new St.Icon({
+        gicon,
+        icon_size: 36,
+        style_class: 'nexus-app-icon',
+        y_align: Clutter.ActorAlign.CENTER,
+      }));
 
       // St.Label does not expose an "ellipsize" construct property on recent
       // GNOME Shell versions.  The property belongs to its ClutterText child.
@@ -98,6 +103,7 @@ export default class AppList {
         text: appInfo?.get_name() || result.name,
         style_class: 'nexus-app-label',
         x_expand: true,
+        y_align: Clutter.ActorAlign.CENTER,
       });
       label.clutter_text.ellipsize = Pango.EllipsizeMode.END;
       content.add_child(label);

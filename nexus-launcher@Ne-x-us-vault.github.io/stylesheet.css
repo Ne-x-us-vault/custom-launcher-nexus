@@ -8,26 +8,31 @@
   border-radius: 30px;
   box-shadow: 0 28px 80px rgba(0, 0, 0, 0.48);
   padding: 24px;
+  spacing: 22px;
 }
 
-/* ── Left identity panel ─────────────────────────────── */
-
 .nexus-left-card {
-  padding: 8px 24px 16px 8px;
-  spacing: 4px;
+  padding: 12px 0 16px 16px;
+}
+
+.nexus-right-card {
+  background-color: rgba(10, 15, 20, 0.54);
+  border: 1px solid rgba(236, 244, 248, 0.12);
+  border-radius: 24px;
+  padding: 14px 12px;
 }
 
 .nexus-search-widget {
   background-color: rgba(9, 13, 17, 0.76);
   border-radius: 999px;
-  min-width: 320px;
-  padding: 12px 16px;
-  margin-bottom: 8px;
+  min-height: 46px;
+  min-width: 350px;
+  padding: 0 18px;
 }
 
 .nexus-search-icon {
   color: rgba(239, 247, 250, 0.94);
-  margin-right: 10px;
+  margin-right: 12px;
 }
 
 .nexus-search-entry {
@@ -39,18 +44,17 @@
 
 .nexus-mark {
   color: rgba(244, 249, 251, 0.90);
-  font-size: 72px;
+  font-size: 74px;
   font-weight: 200;
-  margin-top: 16px;
-  margin-bottom: 2px;
+  margin-top: 40px;
+  margin-bottom: 4px;
 }
 
 .nexus-brand {
   color: rgba(249, 252, 253, 0.98);
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 800;
   letter-spacing: 3px;
-  margin-bottom: 2px;
 }
 
 .nexus-brand-subtitle {
@@ -58,15 +62,14 @@
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.8px;
-  margin-top: 2px;
-  margin-bottom: 8px;
+  margin-top: 5px;
 }
 
 .nexus-divider {
   height: 1px;
   background-color: rgba(231, 241, 245, 0.25);
-  margin-top: 4px;
-  margin-bottom: 10px;
+  margin-top: 20px;
+  margin-bottom: 12px;
 }
 
 .nexus-status-copy {
@@ -75,25 +78,78 @@
   line-height: 1.55;
 }
 
-/* ── Dock bar ────────────────────────────────────────── */
+.nexus-app-list-scrollview {
+  padding: 1px 0;
+}
+
+.nexus-app-list-scrollview StScrollBar {
+  padding-left: 7px;
+  min-width: 6px;
+}
+
+.nexus-app-list-scrollview StScrollBar StBin {
+  background-color: rgba(232, 241, 246, 0.07);
+  border-radius: 999px;
+  min-width: 3px;
+}
+
+.nexus-app-list-scrollview StScrollBar StButton {
+  background-color: rgba(232, 241, 246, 0.38);
+  border-radius: 999px;
+  min-width: 4px;
+  min-height: 42px;
+}
+
+.nexus-app-list-scrollview StScrollBar StButton:hover {
+  background-color: rgba(232, 241, 246, 0.58);
+}
+
+.nexus-app-row {
+  background-color: transparent;
+  border-radius: 16px;
+  padding: 9px 12px;
+  min-height: 54px;
+  margin-bottom: 4px;
+}
+
+.nexus-app-row:hover,
+.nexus-app-row:selected,
+.nexus-app-row:selected:hover {
+  background-color: rgba(232, 241, 246, 0.14);
+}
+
+.nexus-app-row-content {
+  padding: 0;
+}
+
+.nexus-app-label {
+  color: rgba(246, 250, 252, 0.96);
+  font-size: 14px;
+  font-weight: 500;
+  margin-left: 13px;
+}
+
+.nexus-app-icon {
+  min-width: 36px;
+  min-height: 36px;
+}
 
 .nexus-dock-spacer {
-  min-height: 8px;
+  min-height: 18px;
 }
 
 .nexus-dock-strip {
   background-color: transparent;
   padding: 0;
-  margin-top: 4px;
+  spacing: 9px;
 }
 
 .nexus-dock-btn {
   background-color: rgba(9, 13, 17, 0.72);
   border-radius: 999px;
-  min-width: 48px;
-  min-height: 42px;
-  padding: 0 14px;
-  margin-right: 10px;
+  min-width: 50px;
+  min-height: 44px;
+  padding: 0;
 }
 
 .nexus-dock-btn:hover {
@@ -112,74 +168,4 @@
 
 .nexus-quick-action {
   border: 1px solid rgba(231, 241, 245, 0.16);
-  margin-right: 8px;
-}
-
-/* ── Right app card ──────────────────────────────────── */
-
-.nexus-right-card {
-  background-color: rgba(10, 15, 20, 0.54);
-  border: 1px solid rgba(236, 244, 248, 0.12);
-  border-radius: 28px;
-  padding: 16px 14px;
-  margin-left: 16px;
-}
-
-/* ── App list ────────────────────────────────────────── */
-
-.nexus-app-list-scrollview {
-  padding: 2px 0 2px 0;
-}
-
-.nexus-app-list-scrollview StScrollBar {
-  padding-left: 8px;
-  min-width: 6px;
-}
-
-.nexus-app-list-scrollview StScrollBar StBin {
-  background-color: rgba(232, 241, 246, 0.07);
-  border-radius: 999px;
-  min-width: 3px;
-}
-
-.nexus-app-list-scrollview StScrollBar StButton {
-  background-color: rgba(232, 241, 246, 0.38);
-  border-radius: 999px;
-  min-width: 4px;
-  min-height: 36px;
-}
-
-.nexus-app-list-scrollview StScrollBar StButton:hover {
-  background-color: rgba(232, 241, 246, 0.58);
-}
-
-.nexus-app-row {
-  background-color: transparent;
-  border-radius: 14px;
-  padding: 10px 12px;
-  min-height: 48px;
-  margin-bottom: 3px;
-}
-
-.nexus-app-row:hover,
-.nexus-app-row:selected,
-.nexus-app-row:selected:hover {
-  background-color: rgba(232, 241, 246, 0.14);
-}
-
-.nexus-app-row-content {
-  padding: 2px 0;
-  spacing: 4px;
-}
-
-.nexus-app-label {
-  color: rgba(246, 250, 252, 0.96);
-  font-size: 13px;
-  font-weight: 500;
-  margin-left: 12px;
-}
-
-.nexus-app-icon {
-  min-width: 34px;
-  min-height: 34px;
 }

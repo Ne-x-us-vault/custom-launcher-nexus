@@ -11,14 +11,19 @@ export default class SearchBar {
   }
 
   _build() {
-    this.actor = new St.BoxLayout({ style_class: 'nexus-search-widget', vertical: false, x_expand: true, y_expand: false, x_align: Clutter.ActorAlign.START });
+    this.actor = new St.BoxLayout({ style_class: 'nexus-search-widget', vertical: false, x_expand: true, y_expand: false });
     this._searchIcon = new St.Icon({
       icon_name: 'edit-find-symbolic',
-      icon_size: 16,
+      icon_size: 18,
       y_align: Clutter.ActorAlign.CENTER,
       style_class: 'nexus-search-icon',
     });
-    this._entry = new St.Entry({ style_class: 'nexus-search-entry', x_expand: true, hint_text: this._settings.get_string('search-hint') });
+    this._entry = new St.Entry({
+      style_class: 'nexus-search-entry',
+      x_expand: true,
+      y_align: Clutter.ActorAlign.CENTER,
+      hint_text: this._settings.get_string('search-hint'),
+    });
     this.entry = this._entry;
 
     this.actor.add_child(this._searchIcon);
