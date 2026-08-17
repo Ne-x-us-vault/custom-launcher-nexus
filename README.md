@@ -13,6 +13,7 @@ leaving your current task.
 ## Features
 
 - Frost-glass overlay with a dimmed backdrop, adjustable blur, and background magnification
+- HiDPI-aware layout that scales to your display's scale factor
 - Click-outside or `Escape` to close
 - Fast installed-app search, ranked by name, description, executable, and desktop keywords
 - Keyboard-first controls: `Super + Enter`, arrows, `Tab`, `Enter`, and `Escape`
@@ -21,6 +22,7 @@ leaving your current task.
 - Native GNOME search-provider results (respecting your enabled-providers preferences) plus a web-search result that uses your default browser's search engine
 - Launched apps and opened links are raised to the foreground
 - Opens centered on the monitor under the pointer (multi-monitor friendly)
+- Auto-closes on monitor layout changes (hot-plug, resolution change) so it recenters correctly on next open
 - Customizable appearance: colors, opacities, blur radius, magnification, and overlay opacity
 
 ## Preview
@@ -82,7 +84,8 @@ Remove with `sudo dnf remove nexus-launcher` (or `sudo zypper rm nexus-launcher`
 
 ### Option 4 — Arch Linux package
 
-Needs `makepkg` (Arch / Manjaro / EndeavourOS).
+Needs `makepkg` (Arch / Manjaro / EndeavourOS). The package compiles
+GSettings schemas automatically during build.
 
 ```bash
 cd custom-launcher-nexus/nexus-launcher@Ne-x-us-vault.github.io/packaging
@@ -157,6 +160,7 @@ restores every key and rebuilds the page.
 - **Shortcut does nothing:** run `gnome-extensions info custom-launcher@nexus.dev`; log out/in on Wayland if it is inactive.
 - **Extension became inactive after an update:** GNOME Shell needs a reload; log out/in on Wayland.
 - **Universal search or settings broke after an update:** the shell keeps the old extension code in memory until you log out and back in; a `gnome-extensions disable/enable` cycle does not reload it. Log out/in to pick up the updated files.
+- **Launcher closes when docking/undocking a monitor:** this is intentional — the overlay auto-closes on monitor layout changes so it recenters correctly on the next open.
 - **Need diagnostics:** run `journalctl --user -f -o cat`, then open Nexus and look for `NexusLauncher` errors.
 
 ## License
